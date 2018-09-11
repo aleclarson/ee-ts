@@ -1,0 +1,59 @@
+{
+  "extends": ["tslint:recommended"],
+  "rules": {
+    "arrow-parens": [true, "ban-single-arg-parens"],
+    "ban-types": {
+      "options": [
+        ["Boolean", "Avoid using the `Boolean` type. Did you mean `boolean`?"],
+        ["Number", "Avoid using the `Number` type. Did you mean `number`?"],
+        ["String", "Avoid using the `String` type. Did you mean `string`?"],
+        ["Symbol", "Avoid using the `Symbol` type. Did you mean `symbol`?"]
+      ]
+    },
+    "curly": [true, "ignore-same-line"],
+    "forin": false,
+    "interface-name": false,
+    "interface-over-type-literal": false,
+    "member-access": [true, "no-public"],
+    "member-ordering": {
+      "options": {
+        "order": [
+          "instance-field",
+          "constructor",
+          "public-static-field",
+          "public-instance-method",
+          "protected-static-field",
+          "protected-instance-method",
+          "private-static-field",
+          "private-instance-method"
+        ]
+      }
+    },
+    "no-default-export": true,
+    "no-shadowed-variable": false,
+    "object-literal-sort-keys": false,
+    "one-line": [true, "check-open-brace"],
+    "prefer-conditional-expression": true,
+    "prefer-method-signature": false,
+    "prefer-const": false,
+    "quotemark": [true, "single", "jsx-double", "avoid-template"],
+    "semicolon": [true, "never"],
+    "trailing-comma": {
+      "options": {
+        "singleline": "never",
+        "multiline": {
+          "arrays": "always",
+          "exports": "always",
+          "functions": "never",
+          "imports": "always",
+          "objects": "always",
+          "typeLiterals": "never"
+        }
+      }
+    },
+    "triple-equals": false
+  },
+  "linterOptions": {
+    "exclude": ["node_modules/**/*"]
+  }
+}
