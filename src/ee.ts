@@ -38,7 +38,7 @@ export class EventEmitter<Events> {
   }
 
   /** Unique symbol for accessing the internal listener cache */
-  static ev = ev
+  static readonly ev = ev
 
   /** Count the number of listeners for an event */
   static count<Events>(ee: EventEmitter<Events>, type: keyof Events): number {
