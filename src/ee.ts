@@ -55,6 +55,18 @@ export class EventEmitter<Events> {
     return count
   }
 
+  /** Check if an event has listeners */
+  static has<Events>(
+    ee: EventEmitter<Events>,
+    type: '*' | keyof Events
+  ): boolean {
+    if (type == '*') {
+      for (type in ee[ev]) return true
+      return false
+    }
+    return ee[ev][type] !== undefined
+  }
+
   /** Add many recurring listeners */
   on(map: ListenerMap<Events>): this
 
