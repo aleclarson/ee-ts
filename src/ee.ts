@@ -72,6 +72,18 @@ export class EventEmitter<Events> {
     return Object.keys(ee[ev]) as any
   }
 
+  /** Call the given listener when no other listeners exist */
+  static unhandle<Events, T extends keyof Events>(
+    ee: EventEmitter<Events>,
+    type: T,
+    fn: Listener<Events, T>
+  ): typeof fn {
+    let self: typeof fn = (...args): any => {
+      if (!ee[ev][type]!.first.next) return fn(...args)
+    }
+    return ee.on(type, self)
+  }
+
   /** Add many recurring listeners */
   on(map: ListenerMap<Events>): this
 
