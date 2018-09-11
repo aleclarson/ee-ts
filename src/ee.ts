@@ -67,6 +67,11 @@ export class EventEmitter<Events> {
     return ee[ev][type] !== undefined
   }
 
+  /** Get an array of event types that have listeners */
+  static keys<Events>(ee: EventEmitter<Events>): Array<keyof Events> {
+    return Object.keys(ee[ev]) as any
+  }
+
   /** Add many recurring listeners */
   on(map: ListenerMap<Events>): this
 
