@@ -121,7 +121,13 @@ export class EventEmitter<Events> {
   /** Implementation */
   off(arg: '*' | keyof Events, fn?: Listener<Events>): this {
     if (arg == '*') {
+      let cache = this[ev]
       this[ev] = {}
+      if (this._onEventUnhandled) {
+        for (let type in cache) {
+          this._onEventUnhandled(type)
+        }
+      }
       return this
     }
     if (fn) {
@@ -131,6 +137,9 @@ export class EventEmitter<Events> {
       }
     }
     delete this[ev][arg]
+    if (this._onEventUnhandled) {
+      this._onEventUnhandled(arg)
+    }
     return this
   }
 
@@ -178,6 +187,9 @@ export class EventEmitter<Events> {
         // Delete it.
         else {
           delete this[ev][type]
+          if (this._onEventUnhandled) {
+            this._onEventUnhandled(type)
+          }
           return
         }
       }
@@ -200,6 +212,12 @@ export class EventEmitter<Events> {
     }
   }
 
+  /** Called when an event goes from 0 -> 1 listeners */
+  protected _onEventHandled?<T extends keyof Events>(type: T): void
+
+  /** Called when an event goes from 1 -> 0 listeners */
+  protected _onEventUnhandled?<T extends keyof Events>(type: T): void
+
   /** Implementation of the `on` and `one` methods */
   private [on](
     arg: keyof Events | ListenerMap<Events>,
@@ -209,21 +227,28 @@ export class EventEmitter<Events> {
     if (typeof arg == 'object') {
       for (let type in arg) {
         if (typeof arg[type] == 'function') {
-          addListener(this[ev], type, {
-            fn: arg[type]!,
+          let fn = arg[type]!
+          let list = addListener(this[ev], type, {
+            fn,
             once,
             next: null,
           })
+          if (fn == list.first.fn && this._onEventHandled) {
+            this._onEventHandled(type)
+          }
         }
       }
       return this
     }
     if (typeof fn == 'function') {
-      addListener(this[ev], arg, {
+      let list = addListener(this[ev], arg, {
         fn,
         once,
         next: null,
       })
+      if (fn == list.first.fn && this._onEventHandled) {
+        this._onEventHandled(arg)
+      }
     }
     return fn
   }
@@ -233,17 +258,15 @@ function addListener<Events>(
   cache: { [T in keyof Events]?: LinkedList<Listener<Events, T>> },
   type: keyof Events,
   cb: IListener<Listener<Events>>
-): void {
+): LinkedList<Listener<Events>> {
   let list = cache[type]
   if (list) {
     list.last.next = cb
     list.last = cb
   } else {
-    cache[type] = {
-      first: cb,
-      last: cb,
-    }
+    cache[type] = list = { first: cb, last: cb }
   }
+  return list!
 }
 
 /** Remove listeners that match the filter function */
