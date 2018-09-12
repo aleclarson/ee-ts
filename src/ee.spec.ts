@@ -1,3 +1,4 @@
+/* tslint:disable:no-empty */
 import { EventEmitter as EE } from './ee'
 
 interface A {
@@ -37,11 +38,11 @@ test('add multiple recurring listeners', () => {
 
 test('emit returns last return value (excluding undefined)', () => {
   let ee = new EE<A>()
-  ee.on('bar', () => undefined)
+  ee.on('bar', () => {})
   ee.on('bar', () => 1)
-  ee.on('bar', () => undefined)
+  ee.on('bar', () => {})
   ee.on('bar', () => 2)
-  ee.on('bar', () => undefined)
+  ee.on('bar', () => {})
   expect(ee.emit('bar', 1, 2)).toBe(2)
 })
 
@@ -52,9 +53,9 @@ test('emit returns last return value (excluding undefined)', () => {
 test('add a one-time listener', () => {
   let ee = new EE<A>()
   let fn = jest.fn()
-  ee.on('foo', () => null)
+  ee.on('foo', () => {})
   ee.one('foo', fn)
-  ee.on('foo', () => null)
+  ee.on('foo', () => {})
   ee.emit('foo')
   expect(EE.count(ee, 'foo')).toBe(2)
   expect(fn).toHaveBeenCalledTimes(1)
@@ -76,9 +77,9 @@ test('add multiple one-time listeners', () => {
 test('remove a one-time listener', () => {
   let ee = new EE<A>()
   let fn = jest.fn()
-  ee.on('foo', () => null)
+  ee.on('foo', () => {})
   ee.one('foo', fn)
-  ee.on('foo', () => null)
+  ee.on('foo', () => {})
   ee.off('foo', fn)
   ee.emit('foo')
   expect(fn).toHaveBeenCalledTimes(0)
@@ -103,9 +104,9 @@ test('multiple consecutive one-time listeners', () => {
 test('remove a recurring listener', () => {
   let ee = new EE<A>()
   let fn = jest.fn()
-  ee.on('foo', () => null)
+  ee.on('foo', () => {})
   ee.on('foo', fn)
-  ee.on('foo', () => null)
+  ee.on('foo', () => {})
   ee.off('foo', fn)
   ee.emit('foo')
   expect(fn).toHaveBeenCalledTimes(0)
@@ -126,7 +127,7 @@ test('remove the first listener of an event', () => {
   let ee = new EE<A>()
   let fn = jest.fn()
   ee.on('foo', fn)
-  ee.on('foo', () => null)
+  ee.on('foo', () => {})
   ee.off('foo', fn)
   ee.emit('foo')
   expect(fn).toHaveBeenCalledTimes(0)
@@ -136,7 +137,7 @@ test('remove the first listener of an event', () => {
 test('remove the last listener of an event', () => {
   let ee = new EE<A>()
   let fn = jest.fn()
-  ee.on('foo', () => null)
+  ee.on('foo', () => {})
   ee.on('foo', fn)
   ee.off('foo', fn)
   ee.emit('foo')
@@ -174,9 +175,9 @@ test('remove current listener during emit', () => {
   let fn = jest.fn(() => {
     ee.off('foo', fn)
   })
-  ee.on('foo', () => null)
+  ee.on('foo', () => {})
   ee.on('foo', fn)
-  ee.on('foo', () => null)
+  ee.on('foo', () => {})
   ee.emit('foo')
   expect(fn).toHaveBeenCalledTimes(1)
   expect(EE.count(ee, 'foo')).toBe(2)
@@ -223,7 +224,7 @@ test('remove a listener that was never added', () => {
   let ee = new EE<A>()
   let fn = jest.fn()
   ee.on('foo', fn)
-  ee.off('foo', () => null)
+  ee.off('foo', () => {})
   ee.emit('foo')
   expect(fn).toHaveBeenCalledTimes(1)
 })
@@ -250,6 +251,77 @@ test('loose event names', () => {
     [type: string]: () => number
   }
   let ee = new EE<B>()
-  let result: number|void = ee.emit('whatever')
+  let result: number | void = ee.emit('whatever')
   expect(result).toBe(undefined)
+})
+
+/**
+ * _onEventHandled && _onEventUnhandled
+ */
+
+class Foo extends EE<A> {
+  handled: jest.Mock
+  unhandled: jest.Mock
+
+  constructor() {
+    super()
+    this.handled = jest.fn()
+    this.unhandled = jest.fn()
+  }
+
+  _onEventHandled<T extends keyof A>(type: T): void {
+    this.handled()
+  }
+  _onEventUnhandled<T extends keyof A>(type: T): void {
+    this.unhandled()
+  }
+}
+
+test('on() triggers _onEventHandled()', () => {
+  let ee = new Foo()
+  ee.on('foo', () => {})
+  expect(ee.handled).toBeCalled()
+})
+
+test('on({}) triggers _onEventHandled()', () => {
+  let ee = new Foo()
+  ee.on({
+    foo: () => {},
+  })
+  expect(ee.handled).toBeCalled()
+})
+
+test('one() triggers _onEventHandled()', () => {
+  let ee = new Foo()
+  ee.one('foo', () => {})
+  expect(ee.handled).toBeCalled()
+})
+
+test('one({}) triggers _onEventHandled()', () => {
+  let ee = new Foo()
+  ee.one({
+    foo: () => {},
+  })
+  expect(ee.handled).toBeCalled()
+})
+
+test('off() triggers _onEventUnhandled()', () => {
+  let ee = new Foo()
+  let fn = () => {}
+  ee.on('foo', fn)
+  ee.off('foo', fn)
+  expect(ee.unhandled).toBeCalled()
+  ee.on('foo', fn)
+  ee.off('foo')
+  expect(ee.unhandled).toBeCalledTimes(2)
+  ee.on('foo', fn)
+  ee.off('*')
+  expect(ee.unhandled).toBeCalledTimes(3)
+})
+
+test('emit() triggers _onEventUnhandled()', () => {
+  let ee = new Foo()
+  ee.one('foo', () => {})
+  ee.emit('foo')
+  expect(ee.unhandled).toBeCalled()
 })
