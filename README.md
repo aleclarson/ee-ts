@@ -70,3 +70,63 @@ ee.off('ready')
 /** Remove all listeners */
 ee.off('*')
 ```
+
+#### Static methods
+
+```ts
+/** Handle uncaught "error" events */
+EE.unhandle(ee, 'error', (error) => {
+  throw error
+})
+
+/** Count the number of listeners for an event */
+EE.count(ee, 'error')
+
+/** Check if an event has listeners */
+EE.has(ee, 'error')
+
+/** Get an array of event types that have listeners */
+EE.keys(ee)
+```
+
+#### Subclassing
+
+This library was designed with subclassing in mind.
+
+The only (public) methods inherited are: `on`, `one`, `off`, `emit`
+
+The following methods are called if the subclass implements them:
+- `_onEventHandled(type: string)` when an event goes from 0 -> 1 listeners
+- `_onEventUnhandled(type: string)` when an event goes from 1 -> 0 listeners
+
+```ts
+// Define the possible events.
+namespace App {
+  interface Events {
+    foo(): void
+    bar(a: number, b: number): number
+  }
+}
+
+// Define the subclass.
+class App extends EE<App.Events> {
+  /* ... */
+}
+
+let app = new App()
+
+// [error] Cannot emit an unknown event.
+app.emit('unknown-event')
+
+// [error] Cannot listen to an unknown event.
+app.on('unknown-event', () => {})
+
+// [error] Cannot remove listeners of an unknown event.
+app.off('unknown-event')
+
+// [error] Invalid argument type
+app.one('foo', (invalid: boolean) => {})
+
+// [error] Invalid return type
+app.one('bar', () => true)
+```
