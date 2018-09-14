@@ -53,9 +53,9 @@ export class EventEmitter<T> {
   static readonly ev = ev
 
   /** Count the number of listeners for an event */
-  static count<T>(ee: EventEmitter<T>, type: EventKey<T>): number {
+  static count<T>(ee: EventEmitter<T>, key: EventKey<T>): number {
     let count = 0
-    let list = ee[ev][type]
+    let list = ee[ev][key]
     if (list) {
       let cb = list.first
       while (++count) {
@@ -68,12 +68,12 @@ export class EventEmitter<T> {
   }
 
   /** Check if an event has listeners */
-  static has<T>(ee: EventEmitter<T>, type: '*' | EventKey<T>): boolean {
-    if (type == '*') {
-      for (type in ee[ev]) return true
+  static has<T>(ee: EventEmitter<T>, key: '*' | EventKey<T>): boolean {
+    if (key == '*') {
+      for (key in ee[ev]) return true
       return false
     }
-    return ee[ev][type] !== undefined
+    return ee[ev][key] !== undefined
   }
 
   /** Get an array of event keys that have listeners */
@@ -84,16 +84,16 @@ export class EventEmitter<T> {
   /** Call the given listener when no other listeners exist */
   static unhandle<T, K extends EventKey<T>>(
     ee: EventEmitter<T>,
-    type: K,
+    key: K,
     fn: Listener<T, K>
   ): typeof fn {
-    return ee[on](type, (...args) => {
-      if (!ee[ev][type]!.first.next) return fn(...args)
+    return ee[on](key, (...args) => {
+      if (!ee[ev][key]!.first.next) return fn(...args)
     }) as typeof fn
   }
 
   /** Add a recurring listener */
-  on<K extends EventKey<T>>(type: K, fn: Listener<T, K>): typeof fn
+  on<K extends EventKey<T>>(key: K, fn: Listener<T, K>): typeof fn
 
   /** Add many recurring listeners */
   on(map: ListenerMap<T>): this
@@ -104,7 +104,7 @@ export class EventEmitter<T> {
   }
 
   /** Add a one-time listener */
-  one<K extends EventKey<T>>(type: K, fn: Listener<T, K>): typeof fn
+  one<K extends EventKey<T>>(key: K, fn: Listener<T, K>): typeof fn
 
   /** Add many one-time listeners */
   one(map: ListenerMap<T>): this
@@ -115,10 +115,10 @@ export class EventEmitter<T> {
   }
 
   /** Remove one or all listeners of an event */
-  off<K extends EventKey<T>>(type: K, fn?: Listener<T, K>): this
+  off<K extends EventKey<T>>(key: K, fn?: Listener<T, K>): this
 
   /** Remove all listeners from all events */
-  off(type: '*'): this
+  off(key: '*'): this
 
   /** Implementation */
   off(arg: '*' | EventKey<T>, fn?: Listener<T>): this {
@@ -126,8 +126,8 @@ export class EventEmitter<T> {
       let cache = this[ev]
       this[ev] = {}
       if (this._onEventUnhandled) {
-        for (let type in cache) {
-          this._onEventUnhandled(type)
+        for (let key in cache) {
+          this._onEventUnhandled(key)
         }
       }
       return this
@@ -146,12 +146,12 @@ export class EventEmitter<T> {
   }
 
   /** Call the listeners of an event */
-  emit<K extends EventKey<T>>(type: K, ...args: EventIn<T, K>): EventOut<T, K>
+  emit<K extends EventKey<T>>(key: K, ...args: EventIn<T, K>): EventOut<T, K>
 
   /** Implementation */
-  emit<K extends EventKey<T>>(type: K, ...args: EventIn<T, K>): any {
+  emit<K extends EventKey<T>>(key: K, ...args: EventIn<T, K>): any {
     let result
-    for (let listener of this.listeners(type)) {
+    for (let listener of this.listeners(key)) {
       let val = listener(...args)
       if (val !== undefined) {
         result = val
@@ -161,8 +161,8 @@ export class EventEmitter<T> {
   }
 
   /** Iterate over the listeners of an event */
-  *listeners<K extends EventKey<T>>(type: K): IterableIterator<Listener<T, K>> {
-    let list = this[ev][type]
+  *listeners<K extends EventKey<T>>(key: K): IterableIterator<Listener<T, K>> {
+    let list = this[ev][key]
     if (!list) return
 
     let prev = null
@@ -183,9 +183,9 @@ export class EventEmitter<T> {
         }
         // Delete it.
         else {
-          delete this[ev][type]
+          delete this[ev][key]
           if (this._onEventUnhandled) {
-            this._onEventUnhandled(type as string)
+            this._onEventUnhandled(key as string)
           }
           return
         }
@@ -210,10 +210,10 @@ export class EventEmitter<T> {
   }
 
   /** Called when an event goes from 0 -> 1 listeners */
-  protected _onEventHandled?(type: string): void
+  protected _onEventHandled?(key: string): void
 
   /** Called when an event goes from 1 -> 0 listeners */
-  protected _onEventUnhandled?(type: string): void
+  protected _onEventUnhandled?(key: string): void
 
   /** Implementation of the `on` and `one` methods */
   private [on](
@@ -222,17 +222,17 @@ export class EventEmitter<T> {
     once: boolean = false
   ): this | typeof fn {
     if (typeof arg == 'object') {
-      let type: EventKey<T>
-      for (type in arg) {
-        if (typeof arg[type] == 'function') {
-          let fn = arg[type] as Listener<T>
-          let list = addListener(this[ev], type as EventKey<T>, {
+      let key: EventKey<T>
+      for (key in arg) {
+        if (typeof arg[key] == 'function') {
+          let fn = arg[key] as Listener<T>
+          let list = addListener(this[ev], key as EventKey<T>, {
             fn,
             once,
             next: null,
           })
           if (fn == list.first.fn && this._onEventHandled) {
-            this._onEventHandled(type)
+            this._onEventHandled(key)
           }
         }
       }
@@ -254,15 +254,15 @@ export class EventEmitter<T> {
 
 function addListener<T>(
   cache: { [K in EventKey<T>]?: IListenerList<T, K> },
-  type: EventKey<T>,
+  key: EventKey<T>,
   cb: IListener<T>
 ): IListenerList<T> {
-  let list = cache[type]
+  let list = cache[key]
   if (list) {
     list.last.next = cb
     list.last = cb
   } else {
-    cache[type] = list = { first: cb, last: cb }
+    cache[key] = list = { first: cb, last: cb }
   }
   return list!
 }
