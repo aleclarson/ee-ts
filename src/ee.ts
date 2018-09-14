@@ -1,37 +1,49 @@
 const ev = Symbol('EventEmitter.listeners')
 const on = Symbol('EventEmitter.addListener')
 
-type AnyFunction = (...args: any[]) => any
+// Human-readable generic types
+type Id<T> = T
 
-// Internal listener object
-interface IListener<T> {
-  fn: T
+// Extract the argument/return types of a function
+type In<T> = T extends (...args: infer U) => any ? U : []
+type Out<T> = T extends (...args: any[]) => infer U ? U : never
+
+// Extract keys whose values match a condition
+type Filter<T, Cond, U extends keyof T = keyof T> = {
+  [K in U]: T[K] extends Cond ? K : never
+}[U]
+
+// Extract an array type of valid event keys
+type EventKey<T> = Filter<T, (...args: any[]) => any> & string
+
+// Extract the argument/return types of a valid event
+type EventIn<T, K extends EventKey<T>> = Id<In<T[K]>>
+type EventOut<T, K extends EventKey<T>> = Id<Out<T[K]> | void>
+
+// Internal listener entry
+interface IListener<T, K extends EventKey<T> = EventKey<T>> {
+  fn: Listener<T, K>
   once: boolean
-  next: IListener<T> | null
+  next: IListener<T, K> | null
 }
 
-// Singly linked list of listeners
-type LinkedList<T> = {
-  first: IListener<T>
-  last: IListener<T>
+// Linked list of listener entries
+interface IListenerList<T, K extends EventKey<T> = EventKey<T>> {
+  first: IListener<T, K>
+  last: IListener<T, K>
 }
 
-/** Extract an array type from the argument list of a function type */
-export type ArgList<T> = T extends (...args: infer U) => any ? U : []
+/** Extract the listener type for a specific event */
+export type Listener<T, K extends EventKey<T> = EventKey<T>> = Id<
+  (...args: EventIn<T, K>) => EventOut<T, K>
+>
 
-/** Extract the listener type for a specific event type */
-export type Listener<
-  Events,
-  T extends keyof Events = keyof Events,
-  U = Events[T]
-> = (...args: ArgList<U>) => U extends AnyFunction ? ReturnType<U> | void : any
-
-/** An object where the keys are event types and values are listeners */
-export type ListenerMap<Events> = { [T in keyof Events]?: Listener<Events, T> }
+/** An object of event keys and listener values */
+export type ListenerMap<T> = Partial<{ [K in EventKey<T>]: Listener<T, K> }>
 
 /** Statically typed event emitter */
-export class EventEmitter<Events> {
-  [ev]: { [T in keyof Events]?: LinkedList<Listener<Events, T>> }
+export class EventEmitter<T> {
+  [ev]: { [K in EventKey<T>]?: IListenerList<T, K> }
 
   constructor() {
     this[ev] = {}
@@ -41,9 +53,9 @@ export class EventEmitter<Events> {
   static readonly ev = ev
 
   /** Count the number of listeners for an event */
-  static count<Events>(ee: EventEmitter<Events>, type: keyof Events): number {
+  static count<T>(ee: EventEmitter<T>, type: EventKey<T>): number {
     let count = 0
-    let list = ee[ev][type] as LinkedList<Listener<Events>> | void
+    let list = ee[ev][type]
     if (list) {
       let cb = list.first
       while (++count) {
@@ -56,10 +68,7 @@ export class EventEmitter<Events> {
   }
 
   /** Check if an event has listeners */
-  static has<Events>(
-    ee: EventEmitter<Events>,
-    type: '*' | keyof Events
-  ): boolean {
+  static has<T>(ee: EventEmitter<T>, type: '*' | EventKey<T>): boolean {
     if (type == '*') {
       for (type in ee[ev]) return true
       return false
@@ -67,59 +76,52 @@ export class EventEmitter<Events> {
     return ee[ev][type] !== undefined
   }
 
-  /** Get an array of event types that have listeners */
-  static keys<Events>(ee: EventEmitter<Events>): Array<keyof Events> {
+  /** Get an array of event keys that have listeners */
+  static keys<T>(ee: EventEmitter<T>): Array<EventKey<T>> {
     return Object.keys(ee[ev]) as any
   }
 
   /** Call the given listener when no other listeners exist */
-  static unhandle<Events, T extends keyof Events>(
-    ee: EventEmitter<Events>,
-    type: T,
-    fn: Listener<Events, T>
+  static unhandle<T, K extends EventKey<T>>(
+    ee: EventEmitter<T>,
+    type: K,
+    fn: Listener<T, K>
   ): typeof fn {
-    let self: typeof fn = (...args): any => {
+    return ee[on](type, (...args) => {
       if (!ee[ev][type]!.first.next) return fn(...args)
-    }
-    return ee.on(type, self)
+    }) as typeof fn
   }
 
-  /** Add many recurring listeners */
-  on(map: ListenerMap<Events>): this
-
   /** Add a recurring listener */
-  on<T extends keyof Events, U extends Listener<Events, T>>(type: T, fn: U): U
+  on<K extends EventKey<T>>(type: K, fn: Listener<T, K>): typeof fn
+
+  /** Add many recurring listeners */
+  on(map: ListenerMap<T>): this
 
   /** Implementation */
-  on(
-    arg: keyof Events | ListenerMap<Events>,
-    fn?: Listener<Events>
-  ): this | typeof fn {
+  on(arg: EventKey<T> | ListenerMap<T>, fn?: Listener<T>): this | typeof fn {
     return this[on](arg, fn)
   }
 
-  /** Add many one-time listeners */
-  one(map: ListenerMap<Events>): this
-
   /** Add a one-time listener */
-  one<T extends keyof Events>(type: T, fn: Listener<Events, T>): typeof fn
+  one<K extends EventKey<T>>(type: K, fn: Listener<T, K>): typeof fn
+
+  /** Add many one-time listeners */
+  one(map: ListenerMap<T>): this
 
   /** Implementation */
-  one(
-    arg: keyof Events | ListenerMap<Events>,
-    fn?: Listener<Events>
-  ): this | typeof fn {
+  one(arg: EventKey<T> | ListenerMap<T>, fn?: Listener<T>): this | typeof fn {
     return this[on](arg, fn, true)
   }
+
+  /** Remove one or all listeners of an event */
+  off<K extends EventKey<T>>(type: K, fn?: Listener<T, K>): this
 
   /** Remove all listeners from all events */
   off(type: '*'): this
 
-  /** Remove one or all listeners of an event */
-  off<T extends keyof Events>(type: T, fn?: Listener<Events, T>): this
-
   /** Implementation */
-  off(arg: '*' | keyof Events, fn?: Listener<Events>): this {
+  off(arg: '*' | EventKey<T>, fn?: Listener<T>): this {
     if (arg == '*') {
       let cache = this[ev]
       this[ev] = {}
@@ -130,27 +132,24 @@ export class EventEmitter<Events> {
       }
       return this
     }
-    if (fn) {
-      let list = this[ev][arg] as LinkedList<typeof fn> | null
+    if (typeof fn == 'function') {
+      let list = this[ev][arg]!
       if (list && unlink(list, l => l.fn == fn)) {
         return this
       }
     }
     delete this[ev][arg]
     if (this._onEventUnhandled) {
-      this._onEventUnhandled(arg)
+      this._onEventUnhandled(arg as string)
     }
     return this
   }
 
   /** Call the listeners of an event */
-  emit<T extends keyof Events>(
-    type: T,
-    ...args: ArgList<Events[T]>
-  ): Events[T] extends AnyFunction ? ReturnType<Events[T]> | void : any
+  emit<K extends EventKey<T>>(type: K, ...args: EventIn<T, K>): EventOut<T, K>
 
   /** Implementation */
-  emit<T extends keyof Events>(type: T, ...args: ArgList<Events[T]>): any {
+  emit<K extends EventKey<T>>(type: K, ...args: EventIn<T, K>): any {
     let result
     for (let listener of this.listeners(type)) {
       let val = listener(...args)
@@ -162,9 +161,7 @@ export class EventEmitter<Events> {
   }
 
   /** Iterate over the listeners of an event */
-  *listeners<T extends keyof Events>(
-    type: T
-  ): IterableIterator<Listener<Events, T>> {
+  *listeners<K extends EventKey<T>>(type: K): IterableIterator<Listener<T, K>> {
     let list = this[ev][type]
     if (!list) return
 
@@ -188,7 +185,7 @@ export class EventEmitter<Events> {
         else {
           delete this[ev][type]
           if (this._onEventUnhandled) {
-            this._onEventUnhandled(type)
+            this._onEventUnhandled(type as string)
           }
           return
         }
@@ -213,22 +210,23 @@ export class EventEmitter<Events> {
   }
 
   /** Called when an event goes from 0 -> 1 listeners */
-  protected _onEventHandled?<T extends keyof Events>(type: T): void
+  protected _onEventHandled?(type: string): void
 
   /** Called when an event goes from 1 -> 0 listeners */
-  protected _onEventUnhandled?<T extends keyof Events>(type: T): void
+  protected _onEventUnhandled?(type: string): void
 
   /** Implementation of the `on` and `one` methods */
   private [on](
-    arg: keyof Events | ListenerMap<Events>,
-    fn?: Listener<Events>,
+    arg: EventKey<T> | ListenerMap<T>,
+    fn?: Listener<T>,
     once: boolean = false
   ): this | typeof fn {
     if (typeof arg == 'object') {
-      for (let type in arg) {
+      let type: EventKey<T>
+      for (type in arg) {
         if (typeof arg[type] == 'function') {
-          let fn = arg[type]!
-          let list = addListener(this[ev], type, {
+          let fn = arg[type] as Listener<T>
+          let list = addListener(this[ev], type as EventKey<T>, {
             fn,
             once,
             next: null,
@@ -247,18 +245,18 @@ export class EventEmitter<Events> {
         next: null,
       })
       if (fn == list.first.fn && this._onEventHandled) {
-        this._onEventHandled(arg)
+        this._onEventHandled(arg as string)
       }
     }
     return fn
   }
 }
 
-function addListener<Events>(
-  cache: { [T in keyof Events]?: LinkedList<Listener<Events, T>> },
-  type: keyof Events,
-  cb: IListener<Listener<Events>>
-): LinkedList<Listener<Events>> {
+function addListener<T>(
+  cache: { [K in EventKey<T>]?: IListenerList<T, K> },
+  type: EventKey<T>,
+  cb: IListener<T>
+): IListenerList<T> {
   let list = cache[type]
   if (list) {
     list.last.next = cb
@@ -271,9 +269,9 @@ function addListener<Events>(
 
 /** Remove listeners that match the filter function */
 function unlink<T>(
-  list: LinkedList<T>,
+  list: IListenerList<T>,
   filter: (cb: IListener<T>) => boolean
-): LinkedList<T> | null {
+): IListenerList<T> | null {
   let prev = null
   let curr = list.first
   while (true) {
