@@ -19,7 +19,7 @@
     "wch-typescript": "^0.1.0"
   },
   "scripts": {
-    "lint": "tslint -p tsconfig.json",
+    "lint": "tslint -p tsconfig.json && tsc --noEmit",
     "test": "./node_modules/.bin/jest"
   },
   "husky": {
