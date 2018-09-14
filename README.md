@@ -4,12 +4,12 @@ Type-safe event emitters (for TypeScript)
 
 ### Features
 - strict event names
-- strict type signatures for `emit()` and listeners
-- flow control with `listeners()`
-- add and remove listeners during emit
-- one-time and recurring listeners
-- remove one listener or all listeners of an event
-- remove the listeners of every event
+- type-checking for emitted data
+- flexible `listeners()` generator method
+- add/remove listeners during emit
+- great for sub-classing
+- one-time listeners
+- default handlers
 
 ### Usage
 ```ts
@@ -93,11 +93,10 @@ EE.keys(ee)
 
 This library was designed with subclassing in mind.
 
-The only (public) methods inherited are: `on`, `one`, `off`, `emit`
-
-The following methods are called if the subclass implements them:
-- `_onEventHandled(type: string)` when an event goes from 0 -> 1 listeners
-- `_onEventUnhandled(type: string)` when an event goes from 1 -> 0 listeners
+- The internal cache is non-enumerable
+- Few public methods: `on`, `one`, `off`, `emit`, `listeners`
+- Override `_onEventHandled(type: string)` to know when an event has at least one listener
+- Override `_onEventUnhandled(type: string)` to know when an event has no listeners
 
 ```ts
 // Define the possible events.
