@@ -11,121 +11,135 @@ Type-safe event emitters (for TypeScript)
 - one-time listeners
 - default handlers
 
-### Usage
-```ts
-import {EventEmitter as EE} from 'ee-ts'
+&nbsp;
 
-// All events must be declared here to enable type-checking
-// for the emitter and its listeners.
+### Example
+```ts
+import { EventEmitter as EE } from 'ee-ts'
+
+type User = { name: string }
+
+// All possible events must be explicitly defined as methods here.
+// The return type can be non-void because the `emit` method returns the last non-void value.
+// The return type can never be required, because `void` is implicitly added to every event.
 interface Events {
-  ready(): void
-  add(a: number, b: number): number
+  login(user: User): void
+  logout(): string
 }
 
-let ee = new EE<Events>
-
-/**
- * The result of `emit` equals the last value
- * returned by a listener. (excluding `undefined`)
- *
- * Undefined is always a valid return value.
- */
-ee.on('add', (a, b) => a - b)
-ee.on('add', (a, b) => a + b) // this return value is used
-ee.on('add', (a, b) => undefined)
-ee.emit('add', 1, 2)  // => 3
-
-/**
- * The `one` method creates one-time listeners.
- */
-let i = 0
-ee.one('ready', () => ++i)
-ee.emit('ready')  // => 1
-ee.emit('ready')  // => undefined
-
-/**
- * Call listeners manually for better flow control.
- */
-for (let listener of ee.listeners('ready')) {
-  listener()
-}
-
-/**
- * Add multiple listeners with `on` or `once`
- */
-ee.on({
-  ready: () => {},
-  add: (a, b) => a + b,
-})
-
-/** Your function is returned by `on` and `one` */
-let fn = ee.on('ready', () => {})
-
-/** Remove a single listener */
-ee.off('ready', fn)
-
-/** Remove all "ready" listeners */
-ee.off('ready')
-
-/** Remove all listeners */
-ee.off('*')
-```
-
-#### Static methods
-
-```ts
-/** Handle uncaught "error" events */
-EE.unhandle(ee, 'error', (error) => {
-  throw error
-})
-
-/** Count the number of listeners for an event */
-EE.count(ee, 'error')
-
-/** Check if an event has listeners */
-EE.has(ee, 'error')
-
-/** Get an array of event types that have listeners */
-EE.keys(ee)
-```
-
-#### Subclassing
-
-This library was designed with subclassing in mind.
-
-- The internal cache is non-enumerable
-- Few public methods: `on`, `one`, `off`, `emit`, `listeners`
-- Override `_onEventHandled(type: string)` to know when an event has at least one listener
-- Override `_onEventUnhandled(type: string)` to know when an event has no listeners
-
-```ts
-// Define the possible events.
-namespace App {
-  interface Events {
-    foo(): void
-    bar(a: number, b: number): number
-  }
-}
-
-// Define the subclass.
-class App extends EE<App.Events> {
+// Make your subclass generic to let users add their own events.
+class App<T = {}> extends EE<T & Events> {
   /* ... */
 }
 
 let app = new App()
 
-// [error] Cannot emit an unknown event.
-app.emit('unknown-event')
+// The type of `user` is inferred.
+app.on('login', user => {
+  console.log(user.name) // user.name is string
+})
 
-// [error] Cannot listen to an unknown event.
-app.on('unknown-event', () => {})
+// Invalid argument types are caught.
+app.one('login', (invalid: boolean) => {}) // [ts] Type 'User' is not assignable to type 'boolean'.
 
-// [error] Cannot remove listeners of an unknown event.
-app.off('unknown-event')
+// Invalid return values are caught.
+app.one('logout', () => true) // [ts] Type 'boolean' is not assignable to type 'string | void'.
 
-// [error] Invalid argument type
-app.one('foo', (invalid: boolean) => {})
-
-// [error] Invalid return type
-app.one('bar', () => true)
+// Unknown event names are caught.
+app.emit('invalid') // [ts] Argument of type '"invalid"' is not assignable to parameter of type '"login" | "logout"'.
 ```
+
+&nbsp;
+
+### Subclassing
+
+This library was designed with subclassing in mind.
+
+- The internal cache is non-enumerable
+- Few public methods: `on`, `one`, `off`, `emit`, `listeners`
+- Override `_onEventHandled(key: string)` to know when an event has at least one listener
+- Override `_onEventUnhandled(key: string)` to know when an event has no listeners
+
+&nbsp;
+
+## API Reference
+
+The type signatures below are *not* 100% accurate. They're here to give you a general idea of the API. Find the real type signatures in [the source code](./src/ee.ts) or [VS Code](https://code.visualstudio.com/docs/editor/intellisense).
+
+&nbsp;
+
+#### `on(key: string, fn: Function): Function`
+
+Add a listener to the given event key.
+
+Use the `one` method to add a one-time listener.
+
+*Returns:* the `fn` argument
+
+&nbsp;
+
+#### `on(map: { [key: string]: Function }): this`
+
+Add every listener value to its associated event key.
+
+Use the `one` method to add one-time listeners.
+
+&nbsp;
+
+#### `off(key: string, fn?: Function): this`
+
+Remove a listener for the given event key.
+
+Omit the `fn` argument to remove all listeners for the given event key.
+
+Call `off('*')` to remove all listeners for every event key.
+
+&nbsp;
+
+#### `emit(key: string, ...args: any[]): any`
+
+Emit an event to listeners associated with the given event key.
+
+You can safely add/remove listeners from inside a listener.
+
+*Returns:* last non-void value returned by a listener
+
+&nbsp;
+
+#### `listeners(key: string): IterableIterator<Function>`
+
+Create a generator of the listeners for the given event key.
+
+Use this with `for..of` or spread it into an array. Read more about generators [here](https://medium.com/javascript-scene/the-hidden-power-of-es6-generators-observable-async-flow-control-cfa4c7f31435).
+
+&nbsp;
+
+## Static methods
+
+&nbsp;
+
+#### `unhandle(ee: EventEmitter, key: string, fn: Function): Function`
+
+Set the default handler for an event key.
+
+The default handler is called when no other listeners exist for the same event key.
+
+&nbsp;
+
+#### `keys(ee: EventEmitter): string[]`
+
+Get an array of event keys that have listeners.
+
+&nbsp;
+
+#### `count(ee: EventEmitter, key: string): number`
+
+Get the number of listeners an event has.
+
+&nbsp;
+
+#### `has(ee: EventEmitter, key: string): boolean`
+
+Check if an event has listeners.
+
+*Returns:* true when the given event key has `>= 1` listener.
