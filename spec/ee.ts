@@ -1,5 +1,5 @@
 /* tslint:disable:no-empty */
-import { EventEmitter as EE } from '..'
+import { Disposable, EventEmitter as EE } from '..'
 
 interface A {
   foo(): void
@@ -240,6 +240,25 @@ test('iterate over listeners', () => {
   for (let listener of ee.listeners('bar')) {
     expect(listener(1, 2)).toBe(3)
   }
+})
+
+/**
+ * Disposables
+ */
+
+test('pass an array to collect disposables', () => {
+  let ee = new EE<A>()
+  let list: Array<{ dispose(): void }> = []
+  let fn1 = ee.on('foo', jest.fn(), list)
+  let fn2 = ee.on('foo', jest.fn(), list)
+  ee.emit('foo')
+  list.shift()!.dispose()
+  ee.emit('foo')
+  expect(fn1).toBeCalledTimes(1)
+  expect(fn2).toBeCalledTimes(2)
+  list.shift()!.dispose()
+  ee.emit('foo')
+  expect(fn2).toBeCalledTimes(2)
 })
 
 /**

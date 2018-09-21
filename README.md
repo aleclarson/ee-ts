@@ -3,6 +3,7 @@
 Type-safe event emitters (for TypeScript)
 
 ### Features
+
 - strict event names
 - type-checking for emitted data
 - flexible `listeners()` generator method
@@ -14,6 +15,7 @@ Type-safe event emitters (for TypeScript)
 &nbsp;
 
 ### Example
+
 ```ts
 import { EventEmitter as EE } from 'ee-ts'
 
@@ -62,23 +64,51 @@ This library was designed with subclassing in mind.
 
 &nbsp;
 
-## API Reference
+### Disposables
 
-The type signatures below are *not* 100% accurate. They're here to give you a general idea of the API. Find the real type signatures in [the source code](./src/ee.ts) or [VS Code](https://code.visualstudio.com/docs/editor/intellisense).
+When you pass an array as the last argument of `on`, `one`, or `EE.unhandle`,
+an object is pushed onto it. This object has a `dispose(): void` method, which
+you should call to remove the associated listener from its event.
+
+This is a useful way of grouping listeners together.
+
+```ts
+import { EventEmitter, Disposable } from 'ee-ts'
+
+const ee = new EventEmitter<{ foo(): void }>()
+
+const disposables: Disposable[] = []
+
+let count = 0
+const fn = ee.on('foo', () => count++)
+
+assert(disposables.length == 1)
+
+disposables[0].dispose()
+ee.emit('foo')
+
+assert(count == 0)
+```
 
 &nbsp;
 
-#### `on(key: string, fn: Function): Function`
+## API Reference
+
+The type signatures below are _not_ 100% accurate. They're here to give you a general idea of the API. Find the real type signatures in [the source code](./src/ee.ts) or [VS Code](https://code.visualstudio.com/docs/editor/intellisense).
+
+&nbsp;
+
+#### `on(key: string, fn: Function, disposables?: Disposable[]): Function`
 
 Add a listener to the given event key.
 
 Use the `one` method to add a one-time listener.
 
-*Returns:* the `fn` argument
+_Returns:_ the `fn` argument
 
 &nbsp;
 
-#### `on(map: { [key: string]: Function }): this`
+#### `on(map: { [key: string]: Function }, disposables?: Disposable[]): this`
 
 Add every listener value to its associated event key.
 
@@ -102,7 +132,7 @@ Emit an event to listeners associated with the given event key.
 
 You can safely add/remove listeners from inside a listener.
 
-*Returns:* last non-void value returned by a listener
+_Returns:_ last non-void value returned by a listener
 
 &nbsp;
 
@@ -118,7 +148,7 @@ Use this with `for..of` or spread it into an array. Read more about generators [
 
 &nbsp;
 
-#### `unhandle(ee: EventEmitter, key: string, fn: Function): Function`
+#### `unhandle(ee: EventEmitter, key: string, fn: Function, disposables?: Disposable[]): Function`
 
 Set the default handler for an event key.
 
@@ -142,4 +172,4 @@ Get the number of listeners an event has.
 
 Check if an event has listeners.
 
-*Returns:* true when the given event key has `>= 1` listener.
+_Returns:_ true when the given event key has `>= 1` listener.

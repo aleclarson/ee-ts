@@ -1,3 +1,4 @@
+import { Disposable } from './ee'
 const ev = Symbol('EventEmitter.listeners')
 const on = Symbol('EventEmitter.addListener')
 
@@ -31,6 +32,11 @@ interface IListener<T, K extends EventKey<T> = EventKey<T>> {
 interface IListenerList<T, K extends EventKey<T> = EventKey<T>> {
   first: IListener<T, K>
   last: IListener<T, K>
+}
+
+/** An object that needs to be manually disposed of */
+export interface Disposable {
+  dispose(): void
 }
 
 /** Extract the listener type for a specific event */
@@ -85,22 +91,35 @@ export class EventEmitter<T> {
   static unhandle<T, K extends EventKey<T>>(
     ee: EventEmitter<T>,
     key: K,
-    fn: Listener<T, K>
-  ): typeof fn {
-    return ee[on](key, (...args) => {
-      if (!ee[ev][key]!.first.next) return fn(...args)
-    }) as typeof fn
+    impl: Listener<T, K>,
+    disposables?: Disposable[]
+  ): typeof impl {
+    let listener: Listener<T, K> = (...args) => {
+      if (!ee[ev][key]!.first.next) return impl(...args)
+    }
+    return ee.on(key, listener, disposables)
   }
 
   /** Add a recurring listener */
-  on<K extends EventKey<T>>(key: K, fn: Listener<T, K>): typeof fn
+  on<K extends EventKey<T>>(
+    key: K,
+    fn: Listener<T, K>,
+    disposables?: Disposable[]
+  ): typeof fn
 
   /** Add many recurring listeners */
-  on(map: ListenerMap<T>): this
+  on(map: ListenerMap<T>, disposables?: Disposable[]): this
 
   /** Implementation */
-  on(arg: EventKey<T> | ListenerMap<T>, fn?: Listener<T>): this | typeof fn {
-    return this[on](arg, fn)
+  on(
+    arg: EventKey<T> | ListenerMap<T>,
+    fn?: Listener<T> | Disposable[],
+    disposables?: Disposable[]
+  ): this | Listener<T> {
+    if (typeof fn == 'function') {
+      return this[on](arg, fn, disposables)
+    }
+    return this[on](arg, undefined, fn)
   }
 
   /** Add a one-time listener */
@@ -110,8 +129,15 @@ export class EventEmitter<T> {
   one(map: ListenerMap<T>): this
 
   /** Implementation */
-  one(arg: EventKey<T> | ListenerMap<T>, fn?: Listener<T>): this | typeof fn {
-    return this[on](arg, fn, true)
+  one(
+    arg: EventKey<T> | ListenerMap<T>,
+    fn?: Listener<T> | Disposable[],
+    disposables?: Disposable[]
+  ): this | Listener<T> {
+    if (typeof fn == 'function') {
+      return this[on](arg, fn, disposables, true)
+    }
+    return this[on](arg, undefined, fn, true)
   }
 
   /** Remove one or all listeners of an event */
@@ -219,8 +245,9 @@ export class EventEmitter<T> {
   private [on](
     arg: EventKey<T> | ListenerMap<T>,
     fn?: Listener<T>,
+    disposables?: Disposable[],
     once: boolean = false
-  ): this | typeof fn {
+  ): this | Listener<T> {
     if (typeof arg == 'object') {
       let key: EventKey<T>
       for (key in arg) {
@@ -231,6 +258,11 @@ export class EventEmitter<T> {
             once,
             next: null,
           })
+          if (disposables) {
+            disposables.push({
+              dispose: () => this.off(key, fn),
+            })
+          }
           if (fn == list.first.fn && this._onEventHandled) {
             this._onEventHandled(key)
           }
@@ -239,16 +271,22 @@ export class EventEmitter<T> {
       return this
     }
     if (typeof fn == 'function') {
-      let list = addListener(this[ev], arg, {
+      let key = arg
+      let list = addListener(this[ev], key, {
         fn,
         once,
         next: null,
       })
+      if (disposables) {
+        disposables.push({
+          dispose: () => this.off(key, fn),
+        })
+      }
       if (fn == list.first.fn && this._onEventHandled) {
         this._onEventHandled(arg as string)
       }
     }
-    return fn
+    return fn!
   }
 }
 
