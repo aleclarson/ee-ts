@@ -80,7 +80,7 @@ const ee = new EventEmitter<{ foo(): void }>()
 const disposables: Disposable[] = []
 
 let count = 0
-const fn = ee.on('foo', () => count++)
+const fn = ee.on('foo', () => count++, disposables)
 
 assert(disposables.length == 1)
 
