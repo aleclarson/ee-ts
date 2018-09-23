@@ -1,4 +1,3 @@
-import { Disposable } from './ee'
 const ev = Symbol('EventEmitter.listeners')
 const on = Symbol('EventEmitter.addListener')
 

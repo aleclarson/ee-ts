@@ -1,5 +1,5 @@
 /* tslint:disable:no-empty */
-import { Disposable, EventEmitter as EE } from '..'
+import { EventEmitter as EE } from '..'
 
 interface A {
   foo(): void
