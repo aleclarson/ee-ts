@@ -1,13 +1,8 @@
 module.exports = {
-  roots: ['<rootDir>/spec'],
+  rootDir: 'spec',
+  testRegex: '(/__tests__/.*|(\\.|/)(test|spec))\\.(js|jsx|ts|tsx)$',
+  moduleFileExtensions: ['js', 'jsx', 'ts', 'tsx', 'node', 'json'],
   transform: {
-    '^.+\\.ts$': 'ts-jest',
-  },
-  testRegex: '.*\\.ts$',
-  moduleFileExtensions: ['ts', 'js'],
-  globals: {
-    'ts-jest': {
-      skipBabel: true,
-    },
+    '.(js|jsx|ts|tsx)': '@sucrase/jest-plugin',
   },
 }
