@@ -1,5 +1,12 @@
 # ee-ts
 
+[![npm](https://img.shields.io/npm/v/ee-ts.svg)](https://www.npmjs.com/package/ee-ts)
+[![Install size](https://packagephobia.now.sh/badge?p=ee-ts)](https://packagephobia.now.sh/result?p=ee-ts)
+[![Build status](https://travis-ci.org/aleclarson/ee-ts.svg?branch=master)](https://travis-ci.org/aleclarson/ee-ts)
+[![Coverage status](https://coveralls.io/repos/github/aleclarson/ee-ts/badge.svg?branch=master)](https://coveralls.io/github/aleclarson/ee-ts?branch=master)
+[![Code style: Prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg)](https://github.com/prettier/prettier)
+[![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://paypal.me/alecdotbiz)
+
 Type-safe event emitters (for TypeScript)
 
 ### Features
