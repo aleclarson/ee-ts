@@ -12,11 +12,11 @@
     "@sucrase/jest-plugin": "^2.0.0",
     "@types/jest": "^23.3.9",
     "coveralls": "^3.0.2",
-    "husky": "^1.0.0-rc.14",
-    "jest": "^23.1.0",
+    "husky": "^1.1.3",
+    "jest": "^23.6.0",
     "prettier": "^1.12.1",
     "tslint": "^5.11.0",
-    "typescript": "^3.0.3",
+    "typescript": "^3.1.6",
     "wch-typescript": "^0.1.0"
   },
   "scripts": {
