@@ -1,5 +1,5 @@
-const ev = Symbol('EventEmitter.listeners')
-const on = Symbol('EventEmitter.addListener')
+export const $listeners = Symbol('EventEmitter.listeners')
+export const $addListener = Symbol('EventEmitter.addListener')
 
 // Human-readable generic types
 type Id<T> = T
@@ -48,19 +48,19 @@ export type ListenerMap<T> = Partial<{ [K in EventKey<T>]: Listener<T, K> }>
 
 /** Statically typed event emitter */
 export class EventEmitter<T> {
-  [ev]: { [K in EventKey<T>]?: IListenerList<T, K> }
+  [$listeners]: { [K in EventKey<T>]?: IListenerList<T, K> }
 
   constructor() {
-    this[ev] = {}
+    this[$listeners] = {}
   }
 
   /** Unique symbol for accessing the internal listener cache */
-  static readonly ev = ev
+  static readonly ev = $listeners
 
   /** Count the number of listeners for an event */
   static count<T>(ee: EventEmitter<T>, key: EventKey<T>): number {
     let count = 0
-    let list = ee[ev][key]
+    let list = ee[$listeners][key]
     if (list) {
       let cb = list.first
       while (++count) {
@@ -75,15 +75,15 @@ export class EventEmitter<T> {
   /** Check if an event has listeners */
   static has<T>(ee: EventEmitter<T>, key: '*' | EventKey<T>): boolean {
     if (key == '*') {
-      for (key in ee[ev]) return true
+      for (key in ee[$listeners]) return true
       return false
     }
-    return ee[ev][key] !== undefined
+    return ee[$listeners][key] !== undefined
   }
 
   /** Get an array of event keys that have listeners */
   static keys<T>(ee: EventEmitter<T>): Array<EventKey<T>> {
-    return Object.keys(ee[ev]) as any
+    return Object.keys(ee[$listeners]) as any
   }
 
   /** Call the given listener when no other listeners exist */
@@ -94,7 +94,7 @@ export class EventEmitter<T> {
     disposables?: Disposable[]
   ): typeof impl {
     let listener: Listener<T, K> = (...args) => {
-      if (!ee[ev][key]!.first.next) return impl(...args)
+      if (!ee[$listeners][key]!.first.next) return impl(...args)
     }
     return ee.on(key, listener, disposables)
   }
@@ -116,9 +116,9 @@ export class EventEmitter<T> {
     disposables?: Disposable[]
   ): this | Listener<T> {
     if (typeof fn == 'function') {
-      return this[on](arg, fn, disposables)
+      return this[$addListener](arg, fn, disposables)
     }
-    return this[on](arg, undefined, fn)
+    return this[$addListener](arg, undefined, fn)
   }
 
   /** Add a one-time listener */
@@ -134,9 +134,9 @@ export class EventEmitter<T> {
     disposables?: Disposable[]
   ): this | Listener<T> {
     if (typeof fn == 'function') {
-      return this[on](arg, fn, disposables, true)
+      return this[$addListener](arg, fn, disposables, true)
     }
-    return this[on](arg, undefined, fn, true)
+    return this[$addListener](arg, undefined, fn, true)
   }
 
   /** Remove one or all listeners of an event */
@@ -148,8 +148,8 @@ export class EventEmitter<T> {
   /** Implementation */
   off(arg: '*' | EventKey<T>, fn?: Listener<T>): this {
     if (arg == '*') {
-      let cache = this[ev]
-      this[ev] = {}
+      let cache = this[$listeners]
+      this[$listeners] = {}
       if (this._onEventUnhandled) {
         for (let key in cache) {
           this._onEventUnhandled(key)
@@ -158,12 +158,12 @@ export class EventEmitter<T> {
       return this
     }
     if (typeof fn == 'function') {
-      let list = this[ev][arg]!
+      let list = this[$listeners][arg]!
       if (list && unlink(list, l => l.fn == fn)) {
         return this
       }
     }
-    delete this[ev][arg]
+    delete this[$listeners][arg]
     if (this._onEventUnhandled) {
       this._onEventUnhandled(arg as string)
     }
@@ -192,7 +192,7 @@ export class EventEmitter<T> {
 
   /** Iterate over the listeners of an event */
   *listeners<K extends EventKey<T>>(key: K): IterableIterator<Listener<T, K>> {
-    let list = this[ev][key]
+    let list = this[$listeners][key]
     if (!list) return
 
     let prev = null
@@ -213,7 +213,7 @@ export class EventEmitter<T> {
         }
         // Delete it.
         else {
-          delete this[ev][key]
+          delete this[$listeners][key]
           if (this._onEventUnhandled) {
             this._onEventUnhandled(key as string)
           }
@@ -246,7 +246,7 @@ export class EventEmitter<T> {
   protected _onEventUnhandled?(key: string): void
 
   /** Implementation of the `on` and `one` methods */
-  private [on](
+  protected [$addListener](
     arg: EventKey<T> | ListenerMap<T>,
     fn?: Listener<T>,
     disposables?: Disposable[],
@@ -257,7 +257,7 @@ export class EventEmitter<T> {
       for (key in arg) {
         if (typeof arg[key] == 'function') {
           let fn = arg[key] as Listener<T>
-          let list = addListener(this[ev], key as EventKey<T>, {
+          let list = addListener(this[$listeners], key as EventKey<T>, {
             fn,
             once,
             next: null,
@@ -276,7 +276,7 @@ export class EventEmitter<T> {
     }
     if (typeof fn == 'function') {
       let key = arg
-      let list = addListener(this[ev], key, {
+      let list = addListener(this[$listeners], key, {
         fn,
         once,
         next: null,
