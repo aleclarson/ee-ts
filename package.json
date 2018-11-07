@@ -8,6 +8,10 @@
   "files": [
     "lib"
   ],
+  "scripts": {
+    "build": "tsc -p . -d",
+    "test": "jest --coverage"
+  },
   "devDependencies": {
     "@sucrase/jest-plugin": "^2.0.0",
     "@types/jest": "^23.3.9",
@@ -19,13 +23,10 @@
     "typescript": "^3.1.6",
     "wch-typescript": "^0.1.0"
   },
-  "scripts": {
-    "lint": "tslint -p tsconfig.json && tsc --noEmit",
-    "test": "./node_modules/.bin/jest"
-  },
   "husky": {
     "hooks": {
-      "pre-push": "npm run lint && npm test"
+      "pre-commit": "lint-staged",
+      "pre-push": "./scripts/pre-push.sh"
     }
   }
 }
