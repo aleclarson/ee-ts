@@ -1,14 +1,16 @@
 {
+  "include": ["src"],
   "compilerOptions": {
-    "allowSyntheticDefaultImports": true,
     "declaration": true,
     "lib": ["es2017"],
     "moduleResolution": "node",
     "noImplicitAny": true,
     "noImplicitThis": true,
     "noImplicitUseStrict": true,
-    "rootDir": "src",
+    "outDir": "lib",
+    "sourceMap": true,
     "strictNullChecks": true,
-    "target": "es2015"
+    "suppressImplicitAnyIndexErrors": true,
+    "target": "es5"
   }
 }
