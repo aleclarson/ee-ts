@@ -176,13 +176,18 @@ export class EventEmitter<T> {
   /** Implementation */
   emit<K extends EventKey<T>>(key: K, ...args: EventIn<T, K>): any {
     let result
-    for (let listener of this.listeners(key)) {
-      let val = listener(...args)
-      if (val !== undefined) {
-        result = val
+    let { next } = this.listeners(key)
+    while (true) {
+      let { value: listener, done } = next()
+      if (done) {
+        return result
+      } else {
+        let generated = listener(...args)
+        if (generated !== undefined) {
+          result = generated
+        }
       }
     }
-    return result
   }
 
   /** Iterate over the listeners of an event */
