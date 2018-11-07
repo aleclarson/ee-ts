@@ -11,6 +11,7 @@
   "devDependencies": {
     "@sucrase/jest-plugin": "^2.0.0",
     "@types/jest": "^23.3.9",
+    "coveralls": "^3.0.2",
     "husky": "^1.0.0-rc.14",
     "jest": "^23.1.0",
     "prettier": "^1.12.1",
