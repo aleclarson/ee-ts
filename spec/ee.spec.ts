@@ -291,6 +291,7 @@ class Foo extends EE<A> {
   _onEventHandled<T extends keyof A>(type: T): void {
     this.handled()
   }
+
   _onEventUnhandled<T extends keyof A>(type: T): void {
     this.unhandled()
   }
