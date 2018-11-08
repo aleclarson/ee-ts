@@ -14,6 +14,5 @@ if [[ "master" == "$(git rev-parse --abbrev-ref HEAD)" ]]; then
     trap cleanup EXIT
   fi
 
-  runScript "build"
   runScript "test"
 fi
