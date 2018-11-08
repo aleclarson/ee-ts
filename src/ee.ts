@@ -176,9 +176,9 @@ export class EventEmitter<T> {
   /** Implementation */
   emit<K extends EventKey<T>>(key: K, ...args: EventIn<T, K>): any {
     let result
-    let { next } = this.listeners(key)
+    let gen = this.listeners(key)
     while (true) {
-      let { value: listener, done } = next()
+      let { value: listener, done } = gen.next()
       if (done) {
         return result
       } else {
