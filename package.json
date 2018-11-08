@@ -12,6 +12,10 @@
     "build": "tsc -p . -d",
     "test": "tsc -p . -d --inlineSourceMap && jest -i --coverage"
   },
+  "engines": {
+    "node": ">=6",
+    "typescript": ">=3"
+  },
   "devDependencies": {
     "@sucrase/jest-plugin": "^2.0.0",
     "@types/jest": "^23.3.9",
