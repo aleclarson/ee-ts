@@ -6,6 +6,14 @@ runScript() {
 }
 
 if [[ "master" == "$(git rev-parse --abbrev-ref HEAD)" ]]; then
+  if [[ ! -z "$(git status --porcelain)" ]]; then
+    git stash -u
+    function cleanup {
+      git stash pop
+    }
+    trap cleanup EXIT
+  fi
+
   runScript "build"
   runScript "test"
 fi
