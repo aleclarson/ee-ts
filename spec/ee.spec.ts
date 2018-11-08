@@ -235,11 +235,14 @@ test('remove a listener that was never added', () => {
 
 test('iterate over listeners', () => {
   let ee = new EE<A>()
-  let fn = jest.fn((a, b) => a + b)
-  ee.on('bar', fn)
-  for (let listener of ee.listeners('bar')) {
-    expect(listener(1, 2)).toBe(3)
-  }
+  let fn1 = ee.on('foo', jest.fn())
+  let fn2 = ee.on('foo', jest.fn())
+  expect([...ee.listeners('foo')]).toEqual([fn1, fn2])
+})
+
+test('try iterating over event with no listeners', () => {
+  let ee = new EE<A>()
+  expect([...ee.listeners('foo')]).toEqual([])
 })
 
 /**
@@ -252,13 +255,33 @@ test('pass an array to collect disposables', () => {
   let fn1 = ee.on('foo', jest.fn(), list)
   let fn2 = ee.on('foo', jest.fn(), list)
   ee.emit('foo')
-  list.shift()!.dispose()
+
+  // Dispose the first listener.
+  list[0].dispose()
+
   ee.emit('foo')
   expect(fn1).toBeCalledTimes(1)
   expect(fn2).toBeCalledTimes(2)
-  list.shift()!.dispose()
+
+  // Dispose the second listener.
+  list[1].dispose()
+
   ee.emit('foo')
   expect(fn2).toBeCalledTimes(2)
+})
+
+test('disposables can be collected for listener maps', () => {
+  let ee = new EE<A>()
+  let list: Array<{ dispose(): void }> = []
+  let foo = jest.fn()
+  ee.on({ foo }, list)
+  ee.emit('foo')
+
+  // Dispose the listener.
+  list[0].dispose()
+
+  ee.emit('foo')
+  expect(foo).toBeCalledTimes(1)
 })
 
 /**
@@ -272,6 +295,79 @@ test('loose event names', () => {
   let ee = new EE<B>()
   let result: number | void = ee.emit('whatever')
   expect(result).toBe(undefined)
+})
+
+/**
+ * Static functions
+ */
+
+describe('has(ee, "*")', () => {
+  it('returns true if "ee" has any listeners', () => {
+    let ee = new EE<A>()
+    expect(EE.has(ee, '*')).toBeFalsy()
+
+    let foo = ee.on('foo', () => {})
+    expect(EE.has(ee, '*')).toBeTruthy()
+
+    ee.off('foo', foo)
+    expect(EE.has(ee, '*')).toBeFalsy()
+
+    ee.on('bar', () => {})
+    expect(EE.has(ee, '*')).toBeTruthy()
+  })
+})
+
+describe('has(ee, key)', () => {
+  it('returns true if "ee" has any listeners for the given event key', () => {
+    let ee = new EE<A>()
+    expect(EE.has(ee, 'foo')).toBeFalsy()
+    expect(EE.has(ee, 'bar')).toBeFalsy()
+
+    let foo = ee.on('foo', () => {})
+    expect(EE.has(ee, 'foo')).toBeTruthy()
+    expect(EE.has(ee, 'bar')).toBeFalsy()
+
+    ee.off('foo', foo)
+    expect(EE.has(ee, 'foo')).toBeFalsy()
+    expect(EE.has(ee, 'bar')).toBeFalsy()
+
+    ee.on('bar', () => {})
+    expect(EE.has(ee, 'foo')).toBeFalsy()
+    expect(EE.has(ee, 'bar')).toBeTruthy()
+  })
+})
+
+describe('keys(ee)', () => {
+  it('returns an array of event keys that have listeners', () => {
+    let ee = new EE<A>()
+    expect(EE.keys(ee)).toEqual([])
+
+    ee.on('foo', () => {})
+    expect(EE.keys(ee)).toEqual(['foo'])
+
+    ee.on('bar', () => {})
+    expect(EE.keys(ee)).toEqual(['foo', 'bar'])
+  })
+})
+
+describe('unhandle(ee, key, listener)', () => {
+  it('handles an event when no other listeners exist', () => {
+    let ee = new EE<A>()
+    let foo = jest.fn()
+    EE.unhandle(ee, 'foo', foo)
+
+    ee.emit('foo')
+    expect(foo).toBeCalledTimes(1)
+
+    let fn = ee.on('foo', jest.fn())
+    ee.emit('foo')
+    expect(fn).toBeCalledTimes(1)
+    expect(foo).toBeCalledTimes(1)
+
+    ee.off('foo', fn)
+    ee.emit('foo')
+    expect(foo).toBeCalledTimes(2)
+  })
 })
 
 /**
