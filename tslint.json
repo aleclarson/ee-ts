@@ -1,7 +1,0 @@
-{
-  "extends": "tslint-mango",
-  "rules": {
-    "no-commented-out-code": false,
-    "object-literal-sort-keys": false
-  }
-}
