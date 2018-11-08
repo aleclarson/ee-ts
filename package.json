@@ -10,7 +10,7 @@
   ],
   "scripts": {
     "build": "tsc -p . -d",
-    "test": "jest --coverage"
+    "test": "tsc -p . -d --inlineSourceMap && jest -i --coverage"
   },
   "devDependencies": {
     "@sucrase/jest-plugin": "^2.0.0",

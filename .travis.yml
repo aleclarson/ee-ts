@@ -12,4 +12,4 @@ cache:
   yarn: true
   directories:
     - 'node_modules'
-script: npm run build && jest --coverage && cat ./coverage/lcov.info | coveralls && rm -rf ./coverage
+script: npm test && cat ./coverage/lcov.info | coveralls && rm -rf ./coverage
