@@ -2,7 +2,7 @@
 
 [![npm](https://img.shields.io/npm/v/ee-ts.svg)](https://www.npmjs.com/package/ee-ts)
 [![Build status](https://travis-ci.org/aleclarson/ee-ts.svg?branch=master)](https://travis-ci.org/aleclarson/ee-ts)
-[![Coverage status](https://coveralls.io/repos/github/aleclarson/ee-ts/badge.svg?branch=master)](https://coveralls.io/github/aleclarson/ee-ts?branch=master)
+[![codecov](https://codecov.io/gh/aleclarson/ee-ts/branch/master/graph/badge.svg)](https://codecov.io/gh/aleclarson/ee-ts)
 [![Bundle size](https://badgen.net/bundlephobia/min/ee-ts)](https://bundlephobia.com/result?p=ee-ts)
 [![Install size](https://packagephobia.now.sh/badge?p=ee-ts)](https://packagephobia.now.sh/result?p=ee-ts)
 [![Code style: Prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg)](https://github.com/prettier/prettier)
