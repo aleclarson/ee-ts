@@ -39,10 +39,17 @@ interface Events {
 
 // Make your subclass generic to let users add their own events.
 class App<T = {}> extends EE<T & Events> {
-  /* ... */
+  // You _cannot_ emit user-added events from here, though.
+  someMethod(this: App) {
+    this.emit('logout')
+  }
 }
 
-let app = new App()
+type UserEvents = { test(): void }
+let app = new App<UserEvents>()
+
+// Emit your custom event.
+app.emit('test')
 
 // The type of `user` is inferred.
 app.on('login', user => {
