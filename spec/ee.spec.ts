@@ -6,6 +6,13 @@ interface A {
   bar(a: number, b: number): number
 }
 
+test('nullish listeners', () => {
+  let ee = new EE<A>()
+  ee.on('foo', undefined)
+  ee.on({ foo: null })
+  expect(ee[EE.ev]).toEqual({})
+})
+
 /**
  * Recurring listeners
  */
