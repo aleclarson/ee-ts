@@ -1,6 +1,6 @@
 {
   "name": "ee-ts",
-  "version": "0.1.6",
+  "version": "0.0.0-development",
   "main": "lib/ee.js",
   "license": "MIT",
   "repository": "aleclarson/ee-ts",
@@ -28,6 +28,7 @@
     "jest": "^23.6.0",
     "lint-staged": "^8.0.4",
     "prettier": "^1.12.1",
+    "semantic-release": "^15.12.5",
     "tslint": "^5.11.0",
     "tslint-mango": "^0.1.2",
     "typescript": "^3.1.6"
