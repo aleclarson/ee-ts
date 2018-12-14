@@ -9,8 +9,8 @@
     "lib"
   ],
   "scripts": {
-    "build": "tsc -p . -d",
-    "test": "tsc -p . -d --inlineSourceMap && jest -i --coverage"
+    "build": "tsc -p .",
+    "test": "jest --coverage"
   },
   "engines": {
     "node": ">=6",
