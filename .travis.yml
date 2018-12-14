@@ -11,5 +11,7 @@ env:
 cache:
   yarn: true
   directories:
-    - 'node_modules'
-script: npm test && cat ./coverage/lcov.info | coveralls && rm -rf ./coverage
+    - node_modules
+script:
+  - yarn build
+  - if-node-version 10 && yarn test:cov || yarn test
