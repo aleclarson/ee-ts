@@ -13,7 +13,9 @@
     "test": "jest --coverage"
   },
   "engines": {
-    "node": ">=6",
+    "node": ">=6"
+  },
+  "peerDependencies": {
     "typescript": ">=3"
   },
   "devDependencies": {
