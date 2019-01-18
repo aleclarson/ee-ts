@@ -4,7 +4,7 @@
   "main": "lib/ee.js",
   "license": "MIT",
   "repository": "aleclarson/ee-ts",
-  "description": "Type-safe event emitters",
+  "description": "Type-safe, isomorphic event emitters",
   "files": [
     "lib"
   ],
