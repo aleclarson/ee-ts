@@ -304,7 +304,7 @@ function addListener<T>(
     list.last.next = cb
     list.last = cb
   } else {
-    cache[key] = list = { first: cb, last: cb }
+    cache[key] = list = { first: cb, last: cb, next: null }
   }
   return list!
 }
