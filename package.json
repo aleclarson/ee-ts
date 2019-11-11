@@ -31,7 +31,7 @@
     "lint-staged": "8.1.0",
     "prettier": "1.15.3",
     "semantic-release": "15.12.5",
-    "tslint": "5.11.0",
+    "tslint": "5.20.1",
     "tslint-mango": "0.1.9",
     "typescript": "3.2.2"
   },
