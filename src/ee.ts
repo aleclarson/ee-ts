@@ -3,13 +3,11 @@ import {
   EventIn,
   EventKey,
   EventOut,
-  IListener,
-  IListenerList,
   Listener,
   ListenerMap,
 } from './types'
 
-export { Disposable, EventKey, Listener, ListenerMap }
+export * from './types'
 
 export const $listeners = Symbol('EventEmitter.listeners')
 export const $addListener = Symbol('EventEmitter.addListener')
@@ -260,6 +258,19 @@ export class EventEmitter<T> {
     }
     return fn!
   }
+}
+
+// Internal listener entry
+interface IListener<T, K extends EventKey<T> = EventKey<T>> {
+  fn: Listener<T, K>
+  once: boolean
+  next: IListener<T, K> | null
+}
+
+// Linked list of listener entries
+interface IListenerList<T, K extends EventKey<T> = EventKey<T>> {
+  first: IListener<T, K>
+  last: IListener<T, K>
 }
 
 function addListener<T>(
