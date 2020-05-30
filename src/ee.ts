@@ -9,7 +9,7 @@ import {
   ListenerMap,
 } from './types'
 
-export { Disposable, Listener, ListenerMap }
+export { Disposable, EventKey, Listener, ListenerMap }
 
 export const $listeners = Symbol('EventEmitter.listeners')
 export const $addListener = Symbol('EventEmitter.addListener')
