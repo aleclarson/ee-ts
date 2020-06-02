@@ -23,9 +23,11 @@ export interface Disposable {
 }
 
 /** Extract the listener type for a specific event */
-export type Listener<T, K extends EventKey<T> = EventKey<T>> = Id<
+export type Listener<T = any, K extends EventKey<T> = EventKey<T>> = Id<
   (...args: EventIn<T, K>) => EventOut<T, K>
 >
 
 /** An object of event keys and listener values */
-export type ListenerMap<T> = Partial<{ [K in EventKey<T>]: Listener<T, K> }>
+export type ListenerMap<T = any> = Partial<
+  { [K in EventKey<T>]: Listener<T, K> }
+>
