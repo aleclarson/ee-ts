@@ -191,35 +191,24 @@ export class EventEmitter<T> {
     fn?: Listener<T>,
     once: boolean = false
   ): this | Listener<T> {
-    if (typeof arg == 'object') {
-      let key: EventKey<T>
-      for (key in arg) {
-        if (typeof arg[key] == 'function') {
-          let fn = arg[key] as Listener<T>
-          let list = addListener(this[$listeners], key as EventKey<T>, {
-            fn,
-            once,
-            next: null,
-          })
-          if (fn == list.first.fn && this._onEventHandled) {
-            this._onEventHandled(key)
-          }
-        }
-      }
-      return this
-    }
-    if (typeof fn == 'function') {
-      let key = arg
+    let key = arg as EventKey<T>
+    if (fn) {
       let list = addListener(this[$listeners], key, {
         fn,
         once,
         next: null,
       })
       if (fn == list.first.fn && this._onEventHandled) {
-        this._onEventHandled(arg as string)
+        this._onEventHandled(key)
+      }
+      return fn
+    }
+    if (typeof arg == 'object') {
+      for (key in arg) {
+        this[$addListener](key, arg[key], once)
       }
     }
-    return fn!
+    return this
   }
 }
 
