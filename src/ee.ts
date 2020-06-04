@@ -125,7 +125,7 @@ export class EventEmitter<T> {
     }
     if (typeof fn == 'function') {
       let list = this[$listeners][arg]!
-      if (list && unlink(list, l => l.fn == fn)) {
+      if (!list || unlink(list, l => l.fn == fn)) {
         return this
       }
     }
