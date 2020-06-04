@@ -431,12 +431,22 @@ test('one({}) triggers _onEventHandled()', () => {
 test('off() triggers _onEventUnhandled()', () => {
   let ee = new Foo()
   let fn = () => {}
+
+  // Remove an unknown listener.
+  ee.off('foo', fn)
+  expect(ee.unhandled).not.toBeCalled()
+
+  // Remove a known listener.
   ee.on('foo', fn)
   ee.off('foo', fn)
   expect(ee.unhandled).toBeCalled()
+
+  // Remove all known listeners for a specific key.
   ee.on('foo', fn)
   ee.off('foo')
   expect(ee.unhandled).toBeCalledTimes(2)
+
+  // Remove all known listeners.
   ee.on('foo', fn)
   ee.off('*')
   expect(ee.unhandled).toBeCalledTimes(3)
