@@ -17,11 +17,6 @@ export type EventKey<T> = Filter<T, (...args: any[]) => any> & string
 export type EventIn<T, K extends EventKey<T>> = Id<In<T[K]>>
 export type EventOut<T, K extends EventKey<T>> = Id<Out<T[K]> | void>
 
-/** An object that needs to be manually disposed of */
-export interface Disposable {
-  dispose(): void
-}
-
 /** Extract the listener type for a specific event */
 export type Listener<T = any, K extends EventKey<T> = EventKey<T>> = Id<
   (...args: EventIn<T, K>) => EventOut<T, K>

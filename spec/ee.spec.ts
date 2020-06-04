@@ -253,45 +253,6 @@ test('try iterating over event with no listeners', () => {
 })
 
 /**
- * Disposables
- */
-
-test('pass an array to collect disposables', () => {
-  let ee = new EE<A>()
-  let list: Array<{ dispose(): void }> = []
-  let fn1 = ee.on('foo', jest.fn(), list)
-  let fn2 = ee.on('foo', jest.fn(), list)
-  ee.emit('foo')
-
-  // Dispose the first listener.
-  list[0].dispose()
-
-  ee.emit('foo')
-  expect(fn1).toBeCalledTimes(1)
-  expect(fn2).toBeCalledTimes(2)
-
-  // Dispose the second listener.
-  list[1].dispose()
-
-  ee.emit('foo')
-  expect(fn2).toBeCalledTimes(2)
-})
-
-test('disposables can be collected for listener maps', () => {
-  let ee = new EE<A>()
-  let list: Array<{ dispose(): void }> = []
-  let foo = jest.fn()
-  ee.on({ foo }, list)
-  ee.emit('foo')
-
-  // Dispose the listener.
-  list[0].dispose()
-
-  ee.emit('foo')
-  expect(foo).toBeCalledTimes(1)
-})
-
-/**
  * Loose event names
  */
 

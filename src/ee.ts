@@ -1,11 +1,4 @@
-import {
-  Disposable,
-  EventIn,
-  EventKey,
-  EventOut,
-  Listener,
-  ListenerMap,
-} from './types'
+import { EventIn, EventKey, EventOut, Listener, ListenerMap } from './types'
 
 export * from './types'
 
@@ -56,35 +49,23 @@ export class EventEmitter<T> {
   static unhandle<T, K extends EventKey<T>>(
     ee: EventEmitter<T>,
     key: K,
-    impl: Listener<T, K>,
-    disposables?: Disposable[]
+    impl: Listener<T, K>
   ): typeof impl {
     let listener: Listener<T, K> = (...args) => {
       if (!ee[$listeners][key]!.first.next) return impl(...args)
     }
-    return ee.on(key, listener, disposables)
+    return ee.on(key, listener)
   }
 
   /** Add a recurring listener */
-  on<K extends EventKey<T>>(
-    key: K,
-    fn: Listener<T, K>,
-    disposables?: Disposable[]
-  ): typeof fn
+  on<K extends EventKey<T>>(key: K, fn: Listener<T, K>): typeof fn
 
   /** Add many recurring listeners */
-  on(map: ListenerMap<T>, disposables?: Disposable[]): this
+  on(map: ListenerMap<T>): this
 
   /** Implementation */
-  on(
-    arg: EventKey<T> | ListenerMap<T>,
-    fn?: Listener<T> | Disposable[],
-    disposables?: Disposable[]
-  ): this | Listener<T> {
-    if (typeof fn == 'function') {
-      return this[$addListener](arg, fn, disposables)
-    }
-    return this[$addListener](arg, undefined, fn)
+  on(arg: EventKey<T> | ListenerMap<T>, fn?: Listener<T>) {
+    return this[$addListener](arg, fn)
   }
 
   /** Add a one-time listener */
@@ -94,15 +75,8 @@ export class EventEmitter<T> {
   one(map: ListenerMap<T>): this
 
   /** Implementation */
-  one(
-    arg: EventKey<T> | ListenerMap<T>,
-    fn?: Listener<T> | Disposable[],
-    disposables?: Disposable[]
-  ): this | Listener<T> {
-    if (typeof fn == 'function') {
-      return this[$addListener](arg, fn, disposables, true)
-    }
-    return this[$addListener](arg, undefined, fn, true)
+  one(arg: EventKey<T> | ListenerMap<T>, fn?: Listener<T>) {
+    return this[$addListener](arg, fn, true)
   }
 
   /** Remove one or all listeners of an event */
@@ -215,7 +189,6 @@ export class EventEmitter<T> {
   protected [$addListener](
     arg: EventKey<T> | ListenerMap<T>,
     fn?: Listener<T>,
-    disposables?: Disposable[],
     once: boolean = false
   ): this | Listener<T> {
     if (typeof arg == 'object') {
@@ -228,11 +201,6 @@ export class EventEmitter<T> {
             once,
             next: null,
           })
-          if (disposables) {
-            disposables.push({
-              dispose: () => this.off(key, fn),
-            })
-          }
           if (fn == list.first.fn && this._onEventHandled) {
             this._onEventHandled(key)
           }
@@ -247,11 +215,6 @@ export class EventEmitter<T> {
         once,
         next: null,
       })
-      if (disposables) {
-        disposables.push({
-          dispose: () => this.off(key, fn),
-        })
-      }
       if (fn == list.first.fn && this._onEventHandled) {
         this._onEventHandled(arg as string)
       }
