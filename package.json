@@ -1,6 +1,6 @@
 {
   "name": "ee-ts",
-  "version": "0.0.0-development",
+  "version": "1.0.1",
   "main": "lib/ee.js",
   "license": "MIT",
   "repository": "aleclarson/ee-ts",
