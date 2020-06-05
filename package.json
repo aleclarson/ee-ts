@@ -28,15 +28,15 @@
     "husky": "1.2.1",
     "if-node-version": "1.1.1",
     "jest": "23.6.0",
-    "lint-staged": "8.1.0",
     "prettier": "1.15.3",
+    "pretty-quick": "2.0.1",
     "tslint": "5.11.0",
     "tslint-mango": "0.1.9",
     "typescript": "3.2.2"
   },
   "husky": {
     "hooks": {
-      "pre-commit": "lint-staged",
+      "pre-commit": "pretty-quick --staged",
       "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
     }
   },
