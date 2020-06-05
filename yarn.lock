@@ -158,6 +158,13 @@
     mkdirp "^0.5.1"
     rimraf "^2.5.2"
 
+"@phenomnomnominal/tsquery@^4.0.0":
+  version "4.1.0"
+  resolved "https://registry.yarnpkg.com/@phenomnomnominal/tsquery/-/tsquery-4.1.0.tgz#9c836d6db829b5127ccc1ffd8e4c2ad08d600071"
+  integrity sha512-+i1eqUJODVanUDuTdOPgnjErFg21DKGLstdRXp4LLGcSbO7c+3pwJPkmdSfbkh9gO6xaHJ/5ftSAMqEFJF5cGA==
+  dependencies:
+    esquery "^1.0.1"
+
 "@sucrase/jest-plugin@2.0.0":
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/@sucrase/jest-plugin/-/jest-plugin-2.0.0.tgz#bcca4d877f5013fd66d4092e4c8ba475b18228e4"
@@ -1223,10 +1230,22 @@ esprima@^4.0.0:
   resolved "https://registry.yarnpkg.com/esprima/-/esprima-4.0.1.tgz#13b04cdb3e6c5d19df91ab6987a8695619b0aa71"
   integrity sha512-eGuFFw7Upda+g4p+QHvnW0RyTX/SVeJBDM/gCtMARO0cLuT2HcEKnTPvhjV6aGeqrCB/sbNop0Kszm0jsaWU4A==
 
+esquery@^1.0.1:
+  version "1.3.1"
+  resolved "https://registry.yarnpkg.com/esquery/-/esquery-1.3.1.tgz#b78b5828aa8e214e29fb74c4d5b752e1c033da57"
+  integrity sha512-olpvt9QG0vniUBZspVRN6lwB7hOZoTRtT+jzR+tS4ffYx2mzbw+z0XCOk44aaLYKApNX5nMm+E+P6o25ip/DHQ==
+  dependencies:
+    estraverse "^5.1.0"
+
 estraverse@^4.2.0:
   version "4.2.0"
   resolved "https://registry.yarnpkg.com/estraverse/-/estraverse-4.2.0.tgz#0dee3fed31fcd469618ce7342099fc1afa0bdb13"
   integrity sha1-De4/7TH81GlhjOc0IJn8GvoL2xM=
+
+estraverse@^5.1.0:
+  version "5.1.0"
+  resolved "https://registry.yarnpkg.com/estraverse/-/estraverse-5.1.0.tgz#374309d39fd935ae500e7b92e8a6b4c720e59642"
+  integrity sha512-FyohXK+R0vE+y1nHLoBM7ZTyqRpqAlhdZHCWIWEviFLiGB8b04H6bQs8G+XTthacvT8VuwvteiP7RJSxMs8UEw==
 
 esutils@^2.0.2:
   version "2.0.2"
@@ -4392,14 +4411,31 @@ tslint-config-prettier@^1.15.0:
   resolved "https://registry.yarnpkg.com/tslint-config-prettier/-/tslint-config-prettier-1.17.0.tgz#946ed6117f98f3659a65848279156d87628c33dc"
   integrity sha512-NKWNkThwqE4Snn4Cm6SZB7lV5RMDDFsBwz6fWUkTxOKGjMx8ycOHnjIbhn7dZd5XmssW3CwqUjlANR6EhP9YQw==
 
-tslint-mango@0.1.9:
-  version "0.1.9"
-  resolved "https://registry.yarnpkg.com/tslint-mango/-/tslint-mango-0.1.9.tgz#9387e5542c8c50a2a7b94903b6510c3f1e37bee6"
-  integrity sha512-JetAg+/wEQSYWpUeB71dSIUOe6XLWxEdfOMWSQMf+WON4aughbR3eG+Hj3lNbgiG1QrQfCjIYPwnhSwGDFs+6A==
+tslint-etc@^1.5.2:
+  version "1.10.1"
+  resolved "https://registry.yarnpkg.com/tslint-etc/-/tslint-etc-1.10.1.tgz#e0efed4b8f2cb1fe2ed104bc732a8fc01aa28259"
+  integrity sha512-8mtyUaOSuN7FTVg/8QYlxTb+Ih+x3p5mZkouN031ZfmDQlPED5ulG/gK8wcXJwrYwC09GxaoV8g3HYq1vlfa0Q==
+  dependencies:
+    "@phenomnomnominal/tsquery" "^4.0.0"
+    tslib "^1.8.0"
+    tsutils "^3.0.0"
+    tsutils-etc "^1.0.0"
+
+tslint-jasmine-rules@^1.5.1:
+  version "1.6.1"
+  resolved "https://registry.yarnpkg.com/tslint-jasmine-rules/-/tslint-jasmine-rules-1.6.1.tgz#74ffbf4a3a69a9aab7ca58e1854e6afe1a5c1983"
+  integrity sha512-XH5Op9yJQvzySlb79/JO/GQWDMzC+F6zNC7ay1LW9WDYpVmbxhGyefauT5zg3uGkMh1CN35UE2CGbsVOO1bnDw==
+
+tslint-mango@0.1.12:
+  version "0.1.12"
+  resolved "https://registry.yarnpkg.com/tslint-mango/-/tslint-mango-0.1.12.tgz#1651fabb80a698fe8b9f8efeac0196f6d75724ba"
+  integrity sha512-9OoQLw7086p8trYVmcr0VKjVAu1rWA/7jHFkTWXSMtbUCE9Wteg45gyhm1dGvtrNT8tdSGV7UYbyNB9reEnpSQ==
   dependencies:
     tslint "^5.11.0"
     tslint-clean-code "^0.2.7"
     tslint-config-prettier "^1.15.0"
+    tslint-etc "^1.5.2"
+    tslint-jasmine-rules "^1.5.1"
     tslint-misc-rules "^3.5.0"
     tslint-react "^3.6.0"
     typescript "^3.2.2"
@@ -4436,6 +4472,11 @@ tslint@5.11.0, tslint@^5.11.0:
     tslib "^1.8.0"
     tsutils "^2.27.2"
 
+tsutils-etc@^1.0.0:
+  version "1.2.2"
+  resolved "https://registry.yarnpkg.com/tsutils-etc/-/tsutils-etc-1.2.2.tgz#cdeeb777574a5c1b15b27658cb8424f7f7139831"
+  integrity sha512-5g2cXpD1OoVc/MLZxh5PuHXhlnYQmuRiW66e1n91j+2J/Pw5lfmVcZAghoDVBdltDXGaCjy8ZttXaX2u/MjHgg==
+
 tsutils@2.7.1:
   version "2.7.1"
   resolved "https://registry.yarnpkg.com/tsutils/-/tsutils-2.7.1.tgz#411a0e9466525a2b2869260a55620d7292155e24"
@@ -4447,6 +4488,13 @@ tsutils@^2.13.1, tsutils@^2.27.2:
   version "2.29.0"
   resolved "https://registry.yarnpkg.com/tsutils/-/tsutils-2.29.0.tgz#32b488501467acbedd4b85498673a0812aca0b99"
   integrity sha512-g5JVHCIJwzfISaXpXE1qvNalca5Jwob6FjI4AoPlqMusJ6ftFE7IkkFoMhVLRgK+4Kx3gkzb8UZK5t5yTTvEmA==
+  dependencies:
+    tslib "^1.8.1"
+
+tsutils@^3.0.0:
+  version "3.17.1"
+  resolved "https://registry.yarnpkg.com/tsutils/-/tsutils-3.17.1.tgz#ed719917f11ca0dee586272b2ac49e015a2dd759"
+  integrity sha512-kzeQ5B8H3w60nFY2g8cJIuH7JDpsALXySGtwGJ0p2LSjLgay3NdIpqq5SoOBe46bKDW2iq25irHCr8wjomUS2g==
   dependencies:
     tslib "^1.8.1"
 
