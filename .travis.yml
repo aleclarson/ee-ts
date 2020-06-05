@@ -15,8 +15,3 @@ cache:
 script:
   - yarn build
   - if-node-version '>10' && yarn test:cov || yarn test
-jobs:
-  include:
-    - stage: deploy
-      script: yarn build && semantic-release
-      node_js: '8.9.1' # pre-installed version
