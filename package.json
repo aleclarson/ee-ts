@@ -6,7 +6,8 @@
   "repository": "aleclarson/ee-ts",
   "description": "Type-safe, isomorphic event emitters",
   "files": [
-    "lib"
+    "lib",
+    "src"
   ],
   "scripts": {
     "build": "tsc -p .",
