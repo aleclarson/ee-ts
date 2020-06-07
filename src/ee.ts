@@ -13,9 +13,6 @@ export class EventEmitter<T> {
     this[$listeners] = {}
   }
 
-  /** Unique symbol for accessing the internal listener cache */
-  static readonly ev = $listeners
-
   /** Count the number of listeners for an event */
   static count<T>(ee: EventEmitter<T>, key: EventKey<T>): number {
     let count = 0
