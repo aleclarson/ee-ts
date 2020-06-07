@@ -20,6 +20,9 @@
   "peerDependencies": {
     "typescript": ">=3"
   },
+  "dependencies": {
+    "tslib": "^2.0.0"
+  },
   "devDependencies": {
     "@commitlint/cli": "7.3.2",
     "@commitlint/config-conventional": "7.3.1",
