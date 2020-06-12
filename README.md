@@ -13,41 +13,38 @@ Type-safe event emitters (for TypeScript)
 
 ### Features
 
-- strict event names
-- type-checking for emitted data
-- flexible `listeners()` generator method
+- strict event names + argument types
 - add/remove listeners during emit
-- great for sub-classing
+- useful subclass methods
 - one-time listeners
-- default handlers
 
 &nbsp;
 
 ### Example
 
 ```ts
-import { EventEmitter as EE } from 'ee-ts'
+import { EventEmitter } from 'ee-ts'
 
 type User = { name: string }
 
 // All possible events must be explicitly defined as methods here.
 // The return type can be non-void because the `emit` method returns the last non-void value.
 // The return type can never be required, because `void` is implicitly added to every event.
-interface Events {
+interface AppEvents {
   login(user: User): void
   logout(): string
 }
 
 // Make your subclass generic to let users add their own events.
-class App<T = {}> extends EE<T & Events> {
+class App<T = {}> extends EventEmitter<T & AppEvents> {
   // You _cannot_ emit user-added events from here, though.
-  someMethod(this: App) {
+  logout(this: App) {
     this.emit('logout')
   }
 }
 
-type UserEvents = { test(): void }
-let app = new App<UserEvents>()
+type CustomEvents = { test(): void }
+let app = new App<CustomEvents>()
 
 // Emit your custom event.
 app.emit('test')
@@ -55,56 +52,30 @@ app.emit('test')
 // The type of `user` is inferred.
 app.on('login', user => {
   console.log(user.name) // user.name is string
+
+  // Return false to stop listening.
+  return false
 })
 
 // Invalid argument types are caught.
-app.one('login', (invalid: boolean) => {}) // [ts] Type 'User' is not assignable to type 'boolean'.
-
-// Invalid return values are caught.
-app.one('logout', () => true) // [ts] Type 'boolean' is not assignable to type 'string | void'.
+app.on('login', (invalid: boolean) => {}) // [ts] Type 'User' is not assignable to type 'boolean'.
 
 // Unknown event names are caught.
-app.emit('invalid') // [ts] Argument of type '"invalid"' is not assignable to parameter of type '"login" | "logout"'.
+app.emit('invalid') // [ts] Argument of type '"invalid"' is not assignable to parameter of type '"login" | "logout" | "test"'.
 ```
 
 &nbsp;
 
 ### Subclassing
 
-This library was designed with subclassing in mind.
+The `EventEmitter` class provides a few useful methods for subclasses to override.
 
-- The internal cache is non-enumerable
-- Few public methods: `on`, `one`, `off`, `emit`, `listeners`
-- Override `_onEventHandled(key: string)` to know when an event has at least one listener
-- Override `_onEventUnhandled(key: string)` to know when an event has no listeners
+- The `_addListener(key, fn)` and `_removeListener(key, fn)` methods are called for every
+  listener that is added/removed.
 
-&nbsp;
+- The `_addListeners(key)` method creates the internal cache for listeners of the given event key. Override if you want to know when an event is being handled.
 
-### Disposables
-
-When you pass an array as the last argument of `on`, `one`, or `EE.unhandle`,
-an object is pushed onto it. This object has a `dispose(): void` method, which
-you should call to remove the associated listener from its event.
-
-This is a useful way of grouping listeners together.
-
-```ts
-import { EventEmitter, Disposable } from 'ee-ts'
-
-const ee = new EventEmitter<{ foo(): void }>()
-
-const disposables: Disposable[] = []
-
-let count = 0
-const fn = ee.on('foo', () => count++, disposables)
-
-assert(disposables.length == 1)
-
-disposables[0].dispose()
-ee.emit('foo')
-
-assert(count == 0)
-```
+- The `_removeListeners(key)` method removes the internal cache for listeners of the given event key. Override if you want to know when an event is not being handled anymore.
 
 &nbsp;
 
@@ -114,21 +85,21 @@ The type signatures below are _not_ 100% accurate. They're here to give you a ge
 
 &nbsp;
 
-#### `on(key: string, fn: Function, disposables?: Disposable[]): Function`
+#### `on(key: string, fn: Function | Falsy): typeof fn`
 
 Add a listener to the given event key.
 
-Use the `one` method to add a one-time listener.
+Your listener can return `false` to stop listening.
 
 _Returns:_ the `fn` argument
 
 &nbsp;
 
-#### `on(map: { [key: string]: Function }, disposables?: Disposable[]): this`
+#### `on(map: { [key: string]: Function | Falsy }): this`
 
 Add every listener value to its associated event key.
 
-Use the `one` method to add one-time listeners.
+Your listeners can return `false` to stop listening.
 
 &nbsp;
 
@@ -142,50 +113,8 @@ Call `off('*')` to remove all listeners for every event key.
 
 &nbsp;
 
-#### `emit(key: string, ...args: any[]): any`
+#### `emit(key: string, ...args: any[]): void`
 
 Emit an event to listeners associated with the given event key.
 
 You can safely add/remove listeners from inside a listener.
-
-_Returns:_ last non-void value returned by a listener
-
-&nbsp;
-
-#### `listeners(key: string): IterableIterator<Function>`
-
-Create a generator of the listeners for the given event key.
-
-Use this with `for..of` or spread it into an array. Read more about generators [here](https://medium.com/javascript-scene/the-hidden-power-of-es6-generators-observable-async-flow-control-cfa4c7f31435).
-
-&nbsp;
-
-## Static methods
-
-&nbsp;
-
-#### `unhandle(ee: EventEmitter, key: string, fn: Function, disposables?: Disposable[]): Function`
-
-Set the default handler for an event key.
-
-The default handler is called when no other listeners exist for the same event key.
-
-&nbsp;
-
-#### `keys(ee: EventEmitter): string[]`
-
-Get an array of event keys that have listeners.
-
-&nbsp;
-
-#### `count(ee: EventEmitter, key: string): number`
-
-Get the number of listeners an event has.
-
-&nbsp;
-
-#### `has(ee: EventEmitter, key: string): boolean`
-
-Check if an event has listeners.
-
-_Returns:_ true when the given event key has `>= 1` listener.
