@@ -44,9 +44,9 @@ export class EventEmitter<T = any> {
     if (arguments.length == 2) {
       if (fn) this._removeListener(key, fn)
     } else if (key == '*') {
-      Object.keys(this[$listeners]).forEach((key) => this.off(key as any))
+      Object.keys(this[$listeners]).forEach(key => this.off(key as any))
     } else {
-      this.getListeners(key).forEach((fn) => this._removeListener(key, fn))
+      this.getListeners(key).forEach(fn => this._removeListener(key, fn))
     }
     return this
   }
@@ -130,9 +130,7 @@ export class EventEmitter<T = any> {
   protected _emit(key: string, args: any[]) {
     let list = getListeners(this, key)
     if (list) {
-      list.forEach(
-        (fn) => fn(...args) !== false || this._removeListener(key, fn)
-      )
+      list.forEach(fn => fn(...args) !== false || this._removeListener(key, fn))
       if (!list.size) {
         this._removeListeners(key)
       }

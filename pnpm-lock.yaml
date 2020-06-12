@@ -9,8 +9,8 @@ devDependencies:
   husky: 1.2.1
   if-node-version: 1.1.1
   jest: 23.6.0
-  prettier: 1.15.3
-  pretty-quick: 2.0.1_prettier@1.15.3
+  prettier: 2.0.5
+  pretty-quick: 2.0.1_prettier@2.0.5
   tslint: 6.1.2_typescript@3.9.5
   tslint-mango: 0.1.9
   typescript: 3.9.5
@@ -3488,13 +3488,13 @@ packages:
       node: '>=0.10.0'
     resolution:
       integrity: sha1-gV7R9uvGWSb4ZbMQwHE7yzMVzks=
-  /prettier/1.15.3:
+  /prettier/2.0.5:
     dev: true
     engines:
-      node: '>=4'
+      node: '>=10.13.0'
     hasBin: true
     resolution:
-      integrity: sha512-gAU9AGAPMaKb3NNSUUuhhFAS7SCO4ALTN4nRIn6PJ075Qd28Yn2Ig2ahEJWdJwJmlEBTUfC7mMUSFy8MwsOCfg==
+      integrity: sha512-7PtVymN48hGcO4fGjybyBSIWDsLU4H4XlvOHfq91pz9kkGlonzwTfYkaIEwiRg/dAJF9YlbsduBAgtYLi+8cFg==
   /pretty-format/23.6.0:
     dependencies:
       ansi-regex: 3.0.0
@@ -3502,7 +3502,7 @@ packages:
     dev: true
     resolution:
       integrity: sha512-zf9NV1NSlDLDjycnwm6hpFATCGl/K1lt0R/GdkAK2O5LN/rwJoB+Mh93gGJjut4YbmecbfgLWVGSTCr0Ewvvbw==
-  /pretty-quick/2.0.1_prettier@1.15.3:
+  /pretty-quick/2.0.1_prettier@2.0.5:
     dependencies:
       chalk: 2.4.2
       execa: 2.1.0
@@ -3510,7 +3510,7 @@ packages:
       ignore: 5.1.8
       mri: 1.1.5
       multimatch: 4.0.0
-      prettier: 1.15.3
+      prettier: 2.0.5
     dev: true
     engines:
       node: '>=8'
@@ -4807,7 +4807,7 @@ specifiers:
   husky: 1.2.1
   if-node-version: 1.1.1
   jest: 23.6.0
-  prettier: 1.15.3
+  prettier: 2.0.5
   pretty-quick: 2.0.1
   tslib: ^2.0.0
   tslint: 6.1.2
