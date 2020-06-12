@@ -7,7 +7,7 @@ export type Falsy = false | null | undefined
 export type EventKey<T> = keyof T & string
 
 /** Extract the argument/return types of a valid event */
-export type EventArgs<T, K extends EventKey<T>> = K extends keyof T
+export type EventArgs<T, K extends string> = K extends keyof T & EventKey<T>
   ? In<T[K]>
   : any[]
 
@@ -18,7 +18,7 @@ export type Listener<T = any, K extends EventKey<T> = EventKey<T>> = (
 
 /** An object of event keys and listener values */
 export type ListenerMap<T = any> = Partial<
-  { [K in EventKey<T>]: Listener<T, K> | Falsy }
+  { [K in '*' | EventKey<T>]: Listener<T, K> | Falsy }
 >
 
 /** The internal cache of listeners by event key */
