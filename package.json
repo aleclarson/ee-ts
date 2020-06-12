@@ -1,7 +1,7 @@
 {
   "name": "ee-ts",
   "version": "2.0.0-rc.2",
-  "main": "lib/ee.js",
+  "main": "lib/index.js",
   "license": "MIT",
   "repository": "aleclarson/ee-ts",
   "description": "Type-safe, isomorphic event emitters",
