@@ -10,7 +10,6 @@ import {
 export * from './types'
 
 export const $listeners = Symbol('EventEmitter.listeners')
-export const $addListener = Symbol('EventEmitter.addListener')
 
 /** Statically typed event emitter */
 export class EventEmitter<T = any> {
