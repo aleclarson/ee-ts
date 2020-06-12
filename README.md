@@ -97,7 +97,7 @@ _Returns:_ the `fn` argument
 
 #### `on(map: { [key: string]: Function | Falsy }): this`
 
-Add every listener value to its associated event key.
+Add every listener value to its associated event key. Falsy values are skipped.
 
 Your listeners can return `false` to stop listening.
 
@@ -118,3 +118,21 @@ Call `off('*')` to remove all listeners for every event key.
 Emit an event to listeners associated with the given event key.
 
 You can safely add/remove listeners from inside a listener.
+
+&nbsp;
+
+#### `getListeners(): object`
+
+Get the internal cache for all event keys.
+
+&nbsp;
+
+#### `getListeners(key: string): Set<Function>`
+
+Get the internal cache for the given event key.
+
+&nbsp;
+
+#### `hasListeners(key: string): void`
+
+Returns `true` when the given event key has listeners.
