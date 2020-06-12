@@ -133,6 +133,6 @@ Get the internal cache for the given event key.
 
 &nbsp;
 
-#### `hasListeners(key: string): void`
+#### `hasListeners(key: string): boolean`
 
 Returns `true` when the given event key has listeners.
