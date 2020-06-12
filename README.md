@@ -6,7 +6,6 @@
 [![Bundle size](https://badgen.net/bundlephobia/min/ee-ts)](https://bundlephobia.com/result?p=ee-ts)
 [![Install size](https://packagephobia.now.sh/badge?p=ee-ts)](https://packagephobia.now.sh/result?p=ee-ts)
 [![Code style: Prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg)](https://github.com/prettier/prettier)
-[![semantic-release](https://img.shields.io/badge/%20%20%F0%9F%93%A6%F0%9F%9A%80-semantic--release-e10079.svg)](https://github.com/semantic-release/semantic-release)
 [![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://paypal.me/alecdotbiz)
 
 Type-safe event emitters (for TypeScript)
