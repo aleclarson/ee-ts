@@ -23,7 +23,10 @@ export class EventEmitter<T = any> {
   }
 
   /** Add a recurring listener */
-  on<K extends EventKey<T>>(key: K, fn: Listener<T, K> | Falsy): typeof fn
+  on<K extends EventKey<T>, Fn extends Listener<T, K> | Falsy>(
+    key: K,
+    fn: Fn
+  ): Fn
   /** Add many recurring listeners */
   on(map: ListenerMap<T>): this
   /** @internal */
