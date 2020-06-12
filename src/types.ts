@@ -12,7 +12,7 @@ export type EventArgs<T, K extends string> = K extends keyof T & EventKey<T>
   : unknown[]
 
 /** Extract the listener type for a specific event */
-export type Listener<T = any, K extends EventKey<T> = EventKey<T>> = (
+export type Listener<T = any, K extends string = string> = (
   ...args: EventArgs<T, K>
 ) => boolean | void
 
