@@ -43,10 +43,10 @@ export class EventEmitter<T = any> {
 
   /** Remove one or all listeners of an event */
   off<K extends EventKey<T>>(key: K, fn?: Listener<T, K>) {
-    if (key == '*') {
+    if (arguments.length == 2) {
+      if (fn) this._removeListener(key, fn)
+    } else if (key == '*') {
       Object.keys(this[$listeners]).forEach(key => this.off(key as any))
-    } else if (fn) {
-      this._removeListener(key, fn)
     } else {
       this.getListeners(key).forEach(fn => this._removeListener(key, fn))
     }
