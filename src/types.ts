@@ -1,15 +1,10 @@
 // Extract the argument/return types of a function
 type In<T> = T extends (...args: infer U) => any ? U : any[]
 
-// Extract keys whose values match a condition
-type Filter<T, Cond, U extends keyof T = keyof T> = {
-  [K in U]: T[K] extends Cond ? K : never
-}[U]
-
 export type Falsy = false | null | undefined
 
 /** Extract an array type of valid event keys */
-export type EventKey<T> = '*' | Filter<T, (...args: any[]) => any> & string
+export type EventKey<T> = keyof T & string
 
 /** Extract the argument/return types of a valid event */
 export type EventArgs<T, K extends EventKey<T>> = K extends keyof T
