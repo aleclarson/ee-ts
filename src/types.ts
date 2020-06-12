@@ -1,5 +1,5 @@
 // Extract the argument/return types of a function
-type In<T> = T extends (...args: infer U) => any ? U : any[]
+type In<T> = T extends (...args: infer U) => any ? U : unknown[]
 
 export type Falsy = false | null | undefined
 
@@ -9,7 +9,7 @@ export type EventKey<T> = keyof T & string
 /** Extract the argument/return types of a valid event */
 export type EventArgs<T, K extends string> = K extends keyof T & EventKey<T>
   ? In<T[K]>
-  : any[]
+  : unknown[]
 
 /** Extract the listener type for a specific event */
 export type Listener<T = any, K extends EventKey<T> = EventKey<T>> = (
