@@ -2,7 +2,6 @@
   "include": ["src"],
   "compilerOptions": {
     "declaration": true,
-    "importHelpers": true,
     "lib": ["es2017"],
     "moduleResolution": "node",
     "outDir": "lib",
