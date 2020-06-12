@@ -11,12 +11,10 @@ export type Falsy = false | null | undefined
 /** Extract an array type of valid event keys */
 export type EventKey<T> = '*' | Filter<T, (...args: any[]) => any> & string
 
-export type EventFn<T, K extends EventKey<T>> = K extends keyof T
-  ? T[K]
-  : Listener
-
 /** Extract the argument/return types of a valid event */
-export type EventArgs<T, K extends EventKey<T>> = In<EventFn<T, K>>
+export type EventArgs<T, K extends EventKey<T>> = K extends keyof T
+  ? In<T[K]>
+  : any[]
 
 /** Extract the listener type for a specific event */
 export type Listener<T = any, K extends EventKey<T> = EventKey<T>> = (
