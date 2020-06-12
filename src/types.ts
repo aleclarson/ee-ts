@@ -1,5 +1,5 @@
 // Extract the argument/return types of a function
-type In<T> = T extends (...args: infer U) => any ? U : []
+type In<T> = T extends (...args: infer U) => any ? U : any[]
 
 // Extract keys whose values match a condition
 type Filter<T, Cond, U extends keyof T = keyof T> = {
