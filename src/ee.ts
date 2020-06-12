@@ -1,4 +1,11 @@
-import { EventIn, EventKey, EventOut, Listener, ListenerMap } from './types'
+import {
+  EventArgs,
+  EventKey,
+  Listener,
+  ListenerMap,
+  ListenerCache,
+  Falsy,
+} from './types'
 
 export * from './types'
 
@@ -6,273 +13,141 @@ export const $listeners = Symbol('EventEmitter.listeners')
 export const $addListener = Symbol('EventEmitter.addListener')
 
 /** Statically typed event emitter */
-export class EventEmitter<T> {
-  [$listeners]: { [K in EventKey<T>]?: IListenerList<T, K> }
+export class EventEmitter<T = any> {
+  protected [$listeners]: { [key: string]: Set<Listener> | undefined }
 
   constructor() {
-    this[$listeners] = {}
-  }
-
-  /** Count the number of listeners for an event */
-  static count<T>(ee: EventEmitter<T>, key: EventKey<T>): number {
-    let count = 0
-    let list = ee[$listeners][key]
-    if (list) {
-      let cb = list.first
-      while (++count) {
-        if (cb.next) {
-          cb = cb.next
-        } else break
-      }
-    }
-    return count
-  }
-
-  /** Check if an event has listeners */
-  static has<T>(ee: EventEmitter<T>, key: '*' | EventKey<T>): boolean {
-    if (key == '*') {
-      for (key in ee[$listeners]) return true
-      return false
-    }
-    return ee[$listeners][key] !== undefined
-  }
-
-  /** Get an array of event keys that have listeners */
-  static keys<T>(ee: EventEmitter<T>): Array<EventKey<T>> {
-    return Object.keys(ee[$listeners]) as any
-  }
-
-  /** Call the given listener when no other listeners exist */
-  static unhandle<T, K extends EventKey<T>>(
-    ee: EventEmitter<T>,
-    key: K,
-    impl: Listener<T, K>
-  ): typeof impl {
-    let listener: Listener<T, K> = (...args) => {
-      if (!ee[$listeners][key]!.first.next) return impl(...args)
-    }
-    return ee.on(key, listener)
+    Object.defineProperty(this, $listeners, {
+      value: Object.create(null),
+    })
   }
 
   /** Add a recurring listener */
-  on<K extends EventKey<T>>(key: K, fn: Listener<T, K>): typeof fn
-
+  on<K extends EventKey<T>>(key: K, fn: Listener<T, K> | Falsy): typeof fn
   /** Add many recurring listeners */
   on(map: ListenerMap<T>): this
-
-  /** Implementation */
-  on(arg: EventKey<T> | ListenerMap<T>, fn?: Listener<T>) {
-    return this[$addListener](arg, fn)
-  }
-
-  /** Add a one-time listener */
-  one<K extends EventKey<T>>(key: K, fn: Listener<T, K>): typeof fn
-
-  /** Add many one-time listeners */
-  one(map: ListenerMap<T>): this
-
-  /** Implementation */
-  one(arg: EventKey<T> | ListenerMap<T>, fn?: Listener<T>) {
-    return this[$addListener](arg, fn, true)
+  /** @internal */
+  on(arg: any, fn?: Listener<T> | Falsy) {
+    if (arguments.length == 2) {
+      if (fn) this._addListener(arg, fn)
+      return fn
+    }
+    for (let key in arg) {
+      if ((fn = arg[key])) this._addListener(key, fn)
+    }
+    return this
   }
 
   /** Remove one or all listeners of an event */
-  off<K extends EventKey<T>>(key: K, fn?: Listener<T, K>): this
-
-  /** Remove all listeners from all events */
-  off(key: '*'): this
-
-  /** Implementation */
-  off(arg: '*' | EventKey<T>, fn?: Listener<T>): this {
-    if (arg == '*') {
-      let cache = this[$listeners]
-      this[$listeners] = {}
-      if (this._onEventUnhandled) {
-        for (let key in cache) {
-          this._onEventUnhandled(key)
-        }
-      }
-      return this
-    }
-    if (typeof fn == 'function') {
-      let list = this[$listeners][arg]!
-      if (!list || unlink(list, l => l.fn == fn)) {
-        return this
-      }
-    }
-    delete this[$listeners][arg]
-    if (this._onEventUnhandled) {
-      this._onEventUnhandled(arg as string)
+  off<K extends EventKey<T>>(key: K, fn?: Listener<T, K>) {
+    if (key == '*') {
+      Object.keys(this[$listeners]).forEach(key => this.off(key as any))
+    } else if (fn) {
+      this._removeListener(key, fn)
+    } else {
+      this.getListeners(key).forEach(fn => this._removeListener(key, fn))
     }
     return this
   }
 
   /** Call the listeners of an event */
-  emit<K extends EventKey<T>>(key: K, ...args: EventIn<T, K>): EventOut<T, K>
+  emit<K extends EventKey<T>>(key: K, ...args: EventArgs<T, K>) {
+    if (getListeners(this, '*')) {
+      this._emit('*', args)
+    }
+    this._emit(key, args)
+  }
 
-  /** Implementation */
-  emit<K extends EventKey<T>>(key: K, ...args: EventIn<T, K>): any {
-    let result
-    let gen = this.listeners(key)
-    while (true) {
-      let { value: listener, done } = gen.next()
-      if (done) {
-        return result
-      } else {
-        let generated = listener(...args)
-        if (generated !== undefined) {
-          result = generated
-        }
+  /** Check if listeners exist for the given event key. */
+  hasListeners(key: EventKey<T>) {
+    return !!getListeners(this, key)
+  }
+
+  /** Get the listener cache for the given event key. */
+  getListeners<K extends EventKey<T>>(key: K): ReadonlySet<Listener<T, K>>
+  /** Get the listener cache for all event keys. */
+  getListeners<K extends EventKey<T>>(): ListenerCache<T>
+  /** @internal */
+  getListeners(key?: string) {
+    return (arguments.length
+      ? getListeners(this, key!) || emptySet
+      : this[$listeners]) as any
+  }
+
+  /**
+   * Create the `Set<Listener>` for the given event key.
+   *
+   * Returns the new listener set.
+   *
+   * Use `return super._addListeners(key)` if you override.
+   */
+  protected _addListeners(key: string) {
+    return (this[$listeners][key] = new Set())
+  }
+
+  /**
+   * Remove the `Set<Listener>` for the given event key.
+   *
+   * Use `super._removeListeners(key)` if you override.
+   */
+  protected _removeListeners(key: string) {
+    delete this[$listeners][key]
+  }
+
+  /**
+   * Add a `Listener` for the given event key.
+   *
+   * Use `super._addListeners(key, fn)` if you override.
+   */
+  protected _addListener(key: string, fn: Listener) {
+    let list = getListeners(this, key) || this._addListeners(key)
+    list.add(fn)
+  }
+
+  /**
+   * Remove a `Listener` for the given event key.
+   *
+   * Returns `true` if the given listener was successfully removed.
+   *
+   * Use `return super._removeListener(key, fn)` if you override.
+   */
+  protected _removeListener(key: string, fn: Listener) {
+    let list = getListeners(this, key)
+    if (list && list.delete(fn)) {
+      if (!list.size) {
+        this._removeListeners(key)
       }
+      return true as boolean
     }
   }
 
-  /** Iterate over the listeners of an event */
-  *listeners<K extends EventKey<T>>(key: K): IterableIterator<Listener<T, K>> {
-    let list = this[$listeners][key]
-    if (!list) return
-
-    let prev = null
-    let curr = list.first
-    while (true) {
-      yield curr.fn
-
-      // One-time listener
-      if (curr.once) {
-        // Splice it.
-        if (prev) {
-          prev.next = curr.next
-        }
-        // Shift it.
-        else if (curr.next) {
-          list.first = curr = curr.next
-          continue
-        }
-        // Delete it.
-        else {
-          delete this[$listeners][key]
-          if (this._onEventUnhandled) {
-            this._onEventUnhandled(key as string)
-          }
-          return
-        }
-      }
-      // Recurring listener
-      else {
-        prev = curr
-      }
-
-      // Continue to the next listener.
-      if (curr.next) {
-        curr = curr.next
-        continue
-      }
-
-      // Update the last listener.
-      list.last = curr
-
-      // All done.
-      return
-    }
-  }
-
-  /** Called when an event goes from 0 -> 1 listeners */
-  protected _onEventHandled?(key: string): void
-
-  /** Called when an event goes from 1 -> 0 listeners */
-  protected _onEventUnhandled?(key: string): void
-
-  /** Implementation of the `on` and `one` methods */
-  protected [$addListener](
-    arg: EventKey<T> | ListenerMap<T>,
-    fn?: Listener<T>,
-    once: boolean = false
-  ): this | Listener<T> {
-    let key = arg as EventKey<T>
-    if (fn) {
-      let list = addListener(this[$listeners], key, {
-        fn,
-        once,
-        next: null,
-      })
-      if (fn == list.first.fn && this._onEventHandled) {
-        this._onEventHandled(key)
-      }
-      return fn
-    }
-    if (typeof arg == 'object') {
-      for (key in arg) {
-        this[$addListener](key, arg[key], once)
+  /**
+   * Invoke listeners of the given event key using the given arguments.
+   *
+   * Use `super._emit(key, args)` if you override.
+   */
+  protected _emit(key: string, args: any[]) {
+    let list = getListeners(this, key)
+    if (list) {
+      list.forEach(fn => fn(...args) !== false || this._removeListener(key, fn))
+      if (!list.size) {
+        this._removeListeners(key)
       }
     }
-    return this
   }
 }
 
-// Internal listener entry
-interface IListener<T, K extends EventKey<T> = EventKey<T>> {
-  fn: Listener<T, K>
-  once: boolean
-  next: IListener<T, K> | null
-}
+const emptySet: ReadonlySet<any> = Object.freeze(new Set()) as any
 
-// Linked list of listener entries
-interface IListenerList<T, K extends EventKey<T> = EventKey<T>> {
-  first: IListener<T, K>
-  last: IListener<T, K>
-}
+const getListeners: GetListeners = (ee: EventEmitter, key: string) =>
+  ee[$listeners][key]
 
-function addListener<T>(
-  cache: { [K in EventKey<T>]?: IListenerList<T, K> },
-  key: EventKey<T>,
-  cb: IListener<T>
-): IListenerList<T> {
-  let list = cache[key]
-  if (list) {
-    list.last.next = cb
-    list.last = cb
-  } else {
-    cache[key] = list = { first: cb, last: cb }
-  }
-  return list!
-}
+interface GetListeners extends Function {
+  // Strict getter
+  <T, K extends EventKey<T>>(ee: EventEmitter<T>, key: K):
+    | Set<Listener<T, K>>
+    | undefined
 
-/** Remove listeners that match the filter function */
-function unlink<T>(
-  list: IListenerList<T>,
-  filter: (cb: IListener<T>) => boolean
-): IListenerList<T> | null {
-  let prev = null
-  let curr = list.first
-  while (true) {
-    // Return true to unlink the listener.
-    if (filter(curr)) {
-      // Splice it.
-      if (prev) {
-        prev.next = curr.next
-        if (curr.next) {
-          curr = curr.next
-        } else break
-      }
-      // Shift it.
-      else if (curr.next) {
-        list.first = curr = curr.next
-      }
-      // No listeners remain.
-      else {
-        return null
-      }
-    }
-    // Keep this listener.
-    else {
-      prev = curr
-      if (curr.next) {
-        curr = curr.next
-      } else break
-    }
-  }
-
-  // At least one listener remains.
-  list.last = prev
-  return list
+  // Loose getter
+  (ee: EventEmitter, key: string): Set<Listener> | undefined
 }

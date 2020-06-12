@@ -1,28 +1,36 @@
-// Human-readable generic types
-type Id<T> = T
-
 // Extract the argument/return types of a function
 type In<T> = T extends (...args: infer U) => any ? U : []
-type Out<T> = T extends (...args: any[]) => infer U ? U : never
 
 // Extract keys whose values match a condition
 type Filter<T, Cond, U extends keyof T = keyof T> = {
   [K in U]: T[K] extends Cond ? K : never
 }[U]
 
-// Extract an array type of valid event keys
-export type EventKey<T> = Filter<T, (...args: any[]) => any> & string
+export type Falsy = false | null | undefined
 
-// Extract the argument/return types of a valid event
-export type EventIn<T, K extends EventKey<T>> = Id<In<T[K]>>
-export type EventOut<T, K extends EventKey<T>> = Id<Out<T[K]> | void>
+/** Extract an array type of valid event keys */
+export type EventKey<T> = '*' | Filter<T, (...args: any[]) => any> & string
+
+export type EventFn<T, K extends EventKey<T>> = K extends keyof T
+  ? T[K]
+  : Listener
+
+/** Extract the argument/return types of a valid event */
+export type EventArgs<T, K extends EventKey<T>> = In<EventFn<T, K>>
 
 /** Extract the listener type for a specific event */
-export type Listener<T = any, K extends EventKey<T> = EventKey<T>> = Id<
-  (...args: EventIn<T, K>) => EventOut<T, K>
->
+export type Listener<T = any, K extends EventKey<T> = EventKey<T>> = (
+  ...args: EventArgs<T, K>
+) => boolean | void
 
 /** An object of event keys and listener values */
 export type ListenerMap<T = any> = Partial<
-  { [K in EventKey<T>]: Listener<T, K> }
+  { [K in EventKey<T>]: Listener<T, K> | Falsy }
 >
+
+/** The internal cache of listeners by event key */
+export type ListenerCache<T = any> = {
+  [K in EventKey<T>]: Set<Listener<T, K>> | undefined
+} & {
+  [key: string]: Set<Listener> | undefined
+}
