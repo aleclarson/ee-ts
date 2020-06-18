@@ -57,8 +57,8 @@ export class EventEmitter<T = any> {
 
   /** Call the listeners of an event */
   emit<K extends EventKey<T>>(key: K, ...args: EventArgs<T, K>) {
-    if (getListeners(this, '*')) {
-      this._emit('*', args)
+    if (getListeners(this, 'emit')) {
+      this._emit('emit', [key, args])
     }
     this._emit(key, args)
   }

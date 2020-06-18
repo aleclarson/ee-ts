@@ -4,10 +4,12 @@ type In<T> = T extends (...args: infer U) => any ? U : unknown[]
 export type Falsy = false | null | undefined
 
 /** Extract an array type of valid event keys */
-export type EventKey<T> = keyof T & string
+export type EventKey<T> = 'emit' | (keyof T & string)
 
 /** Extract the argument/return types of a valid event */
-export type EventArgs<T, K extends string> = K extends keyof T & EventKey<T>
+export type EventArgs<T, K extends string> = K extends 'emit'
+  ? [string, unknown[]]
+  : K extends keyof T & EventKey<T>
   ? In<T[K]>
   : unknown[]
 
@@ -18,7 +20,7 @@ export type Listener<T = any, K extends string = string> = (
 
 /** An object of event keys and listener values */
 export type ListenerMap<T = any> = Partial<
-  { [K in '*' | EventKey<T>]: Listener<T, K> | Falsy }
+  { [K in EventKey<T>]: Listener<T, K> | Falsy }
 >
 
 /** The internal cache of listeners by event key */
