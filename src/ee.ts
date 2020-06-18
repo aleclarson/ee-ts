@@ -39,7 +39,11 @@ export class EventEmitter<T = any> {
     return this
   }
 
-  /** Remove one or all listeners of an event */
+  /** Remove all listeners of an event */
+  off<K extends EventKey<T>>(key: K): this
+  /** Remove a listener of an event */
+  off<K extends EventKey<T>>(key: K, fn: Listener<T, K>): this
+  /** @internal */
   off<K extends EventKey<T>>(key: K, fn?: Listener<T, K>) {
     if (arguments.length == 2) {
       if (fn) this._removeListener(key, fn)
