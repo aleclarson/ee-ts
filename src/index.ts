@@ -1,4 +1,4 @@
-export { EventEmitter, $listeners } from './ee'
+export { EventEmitter } from './ee'
 export type {
   Listener,
   ListenerMap,

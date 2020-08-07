@@ -8,7 +8,7 @@ import {
 } from './types'
 
 /** The symbol for storing all listeners */
-export const $listeners = Symbol('EventEmitter.listeners')
+const $listeners = Symbol('EventEmitter.listeners')
 
 /** Strongly typed event emitter */
 export class EventEmitter<T = any> {
