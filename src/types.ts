@@ -1,7 +1,12 @@
+import type { EventEmitter } from './ee'
+
 // Extract the argument/return types of a function
 type In<T> = T extends (...args: infer U) => any ? U : unknown[]
 
 export type Falsy = false | null | undefined
+
+/** Strongly typed event source */
+export interface EventSource<T = any> extends Omit<EventEmitter<T>, 'emit'> {}
 
 /** Extract an array type of valid event keys */
 export type EventKey<T> = 'emit' | (keyof T & string)

@@ -10,9 +10,6 @@ import {
 /** The symbol for storing all listeners */
 export const $listeners = Symbol('EventEmitter.listeners')
 
-/** Strongly typed event source */
-export interface EventSource<T = any> extends Omit<EventEmitter<T>, 'emit'> {}
-
 /** Strongly typed event emitter */
 export class EventEmitter<T = any> {
   protected [$listeners]: { [key: string]: Set<Listener> | undefined }
