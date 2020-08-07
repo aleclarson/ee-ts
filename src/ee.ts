@@ -145,7 +145,7 @@ export class EventEmitter<T = any> {
   }
 }
 
-const emptySet: ReadonlySet<any> = Object.freeze(new Set()) as any
+const emptySet = new Set<any>()
 
 const getListeners: GetListeners = (ee: EventEmitter, key: string) =>
   ee[$listeners][key]
