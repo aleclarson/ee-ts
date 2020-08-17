@@ -11,7 +11,7 @@ import {
 const $listeners = Symbol('EventEmitter.listeners')
 
 /** Strongly typed event emitter */
-export class EventEmitter<T = any> {
+export class EventEmitter<T extends object = any> {
   protected [$listeners]: { [key: string]: Set<Listener> | undefined }
 
   constructor() {
@@ -149,7 +149,7 @@ const getListeners: GetListeners = (ee: EventEmitter, key: string) =>
 
 interface GetListeners extends Function {
   // Strict getter
-  <T, K extends EventKey<T>>(ee: EventEmitter<T>, key: K):
+  <T extends object, K extends EventKey<T>>(ee: EventEmitter<T>, key: K):
     | Set<Listener<T, K>>
     | undefined
 
