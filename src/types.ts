@@ -7,7 +7,7 @@ export type Falsy = false | null | undefined
 
 /** Strongly typed event source */
 export interface EventSource<T extends object = any>
-  extends Omit<EventEmitter<T>, 'emit'> {}
+  extends Omit<EventEmitter<T extends EventSource<infer U> ? U : T>, 'emit'> {}
 
 /** Extract an array type of valid event keys */
 export type EventKey<T> = 'emit' | (keyof T & string)
