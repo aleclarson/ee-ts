@@ -1,16 +1,20 @@
 {
   "name": "ee-ts",
-  "version": "1.0.2",
-  "main": "lib/ee.js",
+  "version": "2.0.0-rc.6",
+  "main": "dist/ee.js",
+  "module": "dist/ee.mjs",
+  "typings": "dist/ee.d.ts",
   "license": "MIT",
   "repository": "aleclarson/ee-ts",
   "description": "Type-safe, isomorphic event emitters",
   "files": [
-    "lib",
+    "dist",
     "src"
   ],
   "scripts": {
-    "build": "tsc -p .",
+    "build": "rollup -c",
+    "prepare": "yarn build",
+    "prepublishOnly": "yarn test",
     "test": "jest",
     "test:cov": "jest --coverage && codecov"
   },
@@ -26,26 +30,15 @@
     "@sucrase/jest-plugin": "2.0.0",
     "@types/jest": "23.3.10",
     "codecov": "3.1.0",
-    "husky": "1.2.1",
+    "esbuild": "^0.6.17",
     "if-node-version": "1.1.1",
     "jest": "23.6.0",
-    "prettier": "1.15.3",
-    "pretty-quick": "2.0.1",
-    "tslint": "5.11.0",
+    "prettier": "2.0.5",
+    "rollup": "^2.23.0",
+    "rollup-plugin-dts": "^1.4.10",
+    "rollup-plugin-esbuild": "^2.4.2",
+    "tslint": "6.1.2",
     "tslint-mango": "0.1.9",
-    "typescript": "3.2.2"
-  },
-  "husky": {
-    "hooks": {
-      "pre-commit": "pretty-quick --staged",
-      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
-    }
-  },
-  "lint-staged": {
-    "{src,spec}/**/*.ts": [
-      "prettier --write",
-      "tslint --fix",
-      "git add"
-    ]
+    "typescript": "^3.9.5"
   }
 }

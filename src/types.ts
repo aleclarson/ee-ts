@@ -1,33 +1,37 @@
-// Human-readable generic types
-type Id<T> = T
+import type { EventEmitter } from './ee'
 
 // Extract the argument/return types of a function
-type In<T> = T extends (...args: infer U) => any ? U : []
-type Out<T> = T extends (...args: any[]) => infer U ? U : never
+type In<T> = T extends (...args: infer U) => any ? U : unknown[]
 
-// Extract keys whose values match a condition
-type Filter<T, Cond, U extends keyof T = keyof T> = {
-  [K in U]: T[K] extends Cond ? K : never
-}[U]
+export type Falsy = false | null | undefined
 
-// Extract an array type of valid event keys
-export type EventKey<T> = Filter<T, (...args: any[]) => any> & string
+/** Strongly typed event source */
+export interface EventSource<T extends object = any>
+  extends Omit<EventEmitter<T extends EventSource<infer U> ? U : T>, 'emit'> {}
 
-// Extract the argument/return types of a valid event
-export type EventIn<T, K extends EventKey<T>> = Id<In<T[K]>>
-export type EventOut<T, K extends EventKey<T>> = Id<Out<T[K]> | void>
+/** Extract an array type of valid event keys */
+export type EventKey<T> = 'emit' | (keyof T & string)
 
-/** An object that needs to be manually disposed of */
-export interface Disposable {
-  dispose(): void
-}
+/** Extract the argument/return types of a valid event */
+export type EventArgs<T, K extends string> = K extends 'emit'
+  ? [string, unknown[]]
+  : K extends keyof T & EventKey<T>
+  ? In<T[K]>
+  : unknown[]
 
 /** Extract the listener type for a specific event */
-export type Listener<T = any, K extends EventKey<T> = EventKey<T>> = Id<
-  (...args: EventIn<T, K>) => EventOut<T, K>
->
+export type Listener<T = any, K extends string = string> = (
+  ...args: EventArgs<T, K>
+) => boolean | void
 
 /** An object of event keys and listener values */
 export type ListenerMap<T = any> = Partial<
-  { [K in EventKey<T>]: Listener<T, K> }
+  { [K in EventKey<T>]: Listener<T, K> | Falsy }
 >
+
+/** The internal cache of listeners by event key */
+export type ListenerCache<T = any> = {
+  [K in EventKey<T>]: Set<Listener<T, K>> | undefined
+} & {
+  [key: string]: Set<Listener> | undefined
+}
