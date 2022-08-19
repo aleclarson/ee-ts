@@ -1,9 +1,8 @@
+import type { Falsy } from '@alloc/types'
 import type { EventEmitter } from './ee'
 
 // Extract the argument/return types of a function
-type In<T> = T extends (...args: infer U) => any ? U : unknown[]
-
-export type Falsy = false | null | undefined
+export type In<T> = T extends (...args: infer U) => any ? U : unknown[]
 
 /** Strongly typed event source */
 export interface EventSource<T extends object = any>
@@ -25,9 +24,9 @@ export type Listener<T = any, K extends string = string> = (
 ) => boolean | void
 
 /** An object of event keys and listener values */
-export type ListenerMap<T = any> = Partial<
-  { [K in EventKey<T>]: Listener<T, K> | Falsy }
->
+export type ListenerMap<T = any> = Partial<{
+  [K in EventKey<T>]: Listener<T, K> | Falsy
+}>
 
 /** The internal cache of listeners by event key */
 export type ListenerCache<T = any> = {

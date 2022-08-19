@@ -1,10 +1,10 @@
+import { Falsy } from '@alloc/types'
 import {
   EventArgs,
   EventKey,
   Listener,
   ListenerMap,
   ListenerCache,
-  Falsy,
 } from './types'
 
 /** The symbol for storing all listeners */
@@ -12,7 +12,7 @@ const $listeners = Symbol('EventEmitter.listeners')
 
 /** Strongly typed event emitter */
 export class EventEmitter<T extends object = any> {
-  protected [$listeners]: { [key: string]: Set<Listener> | undefined }
+  protected [$listeners]!: { [key: string]: Set<Listener> | undefined }
 
   constructor() {
     Object.defineProperty(this, $listeners, {
